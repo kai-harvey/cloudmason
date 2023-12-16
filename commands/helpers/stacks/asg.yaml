@@ -281,14 +281,12 @@ Resources:
   AdminUser:
     Type: AWS::Cognito::UserPoolUser
     Properties:
-      ClientMetadata: Map
-      DesiredDeliveryMediums: List
-      ForceAliasCreation: Boolean
-      MessageAction: String
-      UserAttributes: List
-      Username: String
-      UserPoolId: String
-      ValidationData: List
+      DesiredDeliveryMediums:
+        - EMAIL
+      UserPoolId: !Ref CognitoUserPool
+      UserAttributes:
+        - Name: email
+          Value: !Ref AdminEmail
 # IAM
   AppEc2Role:
     Type: 'AWS::IAM::Role'
