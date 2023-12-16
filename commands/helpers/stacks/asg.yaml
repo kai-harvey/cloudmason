@@ -23,6 +23,7 @@ Parameters:
   AdminEmail:
     Type: String
     Description: Email for the first admin user
+    Default: kaikh611@gmail.com
   AmiId:
     Type: AWS::EC2::Image::Id
     Description: Max number of Ec2 instances
@@ -231,9 +232,21 @@ Resources:
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: True
+      AutoVerifiedAttributes:
+        - email
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
       UsernameAttributes:
         - email
-      # UserPoolName: MyUserPool
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: True
+          RequireNumbers: True
+          RequireSymbols: True
+          RequireUppercase: True    
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
@@ -278,15 +291,13 @@ Resources:
       GroupName: data-admin
       UserPoolId: !Ref CognitoUserPool
       Description: "Admin group for creating and managing data sets"
-  AdminUser:
+  CognitoUserAdmin:
     Type: AWS::Cognito::UserPoolUser
     Properties:
       DesiredDeliveryMediums:
         - EMAIL
       UserPoolId: !Ref CognitoUserPool
-      UserAttributes:
-        - Name: email
-          Value: !Ref AdminEmail
+      Username: 'kaikh611@gmail.com'
 # IAM
   AppEc2Role:
     Type: 'AWS::IAM::Role'

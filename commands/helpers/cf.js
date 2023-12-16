@@ -128,13 +128,6 @@ exports.stackStatus = async function(stackName, region) {
                     status: status,
                     ok: null
                 };
-            } else if (status.includes('ROLLBACK_COMPLETE')){
-                // TODO: Delete stack
-                return {
-                    status: status,
-                    ok: false,
-                    failureReason: stack.StackStatusReason
-                };
             } else {
                 return {
                     status: status,
