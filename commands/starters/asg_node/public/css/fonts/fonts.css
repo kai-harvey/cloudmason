@@ -1,0 +1,17 @@
+/* Fonts */
+@font-face {
+    font-family: 'bpmn';
+    font-weight: normal;
+    font-style: normal;
+    src: url('./bpmn.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('./Montserrat-Var.ttf');
+}
+@font-face {
+    font-family: 'OpenSans';
+    src: url('./OpenSans.ttf');
+    font-weight: 1 1000;
+}

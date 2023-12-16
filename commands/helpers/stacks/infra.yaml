@@ -1,0 +1,102 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Org Cloudformation Template
+
+Parameters:
+  orgName:
+    Type: String
+    Description: Unique name of organization
+  VpcId:
+    Type: String
+    Description: Org VPC
+  
+
+Resources:
+# S3 Bucket
+  InfraBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      VersioningConfiguration:
+        Status: Enabled
+# IAM Policies for Ec2 Build Access
+  InfraBuildRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /infra/
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub arn:aws:s3:::${InfraBucket}
+                  - !Sub arn:aws:s3:::${InfraBucket}/*
+  InfraInstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: /infra/
+      Roles:
+        - !Ref InfraBuildRole
+# Ec2 security group
+  BuildSecGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Security group for build AMI
+      SecurityGroupEgress:
+        - IpProtocol: '-1'
+          CidrIp: '0.0.0.0/0'
+      VpcId: !Ref VpcId
+# Bucket Policy
+  InfraBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: !Ref InfraBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS:
+                - !GetAtt InfraBuildRole.Arn
+            Action:
+              - 's3:GetObject'
+            Resource: 
+              - !Sub arn:aws:s3:::${InfraBucket}
+              - !Sub arn:aws:s3:::${InfraBucket}/*
+# Org Params
+  ParamOrgInfo:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: '/infra/orgName'
+      Type: 'String'
+      Value: !Ref orgName
+  ParamInstanceProfile:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: '/infra/buildInstanceProfile'
+      Type: 'String'
+      Value: !GetAtt InfraInstanceProfile.Arn
+  ParamIAM:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: '/infra/buildSecGroup'
+      Type: 'String'
+      Value: !GetAtt BuildSecGroup.GroupId
+  ParamBucket:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: '/infra/infraBucket'
+      Type: 'String'
+      Value: !Ref InfraBucket

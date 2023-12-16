@@ -1,0 +1,9 @@
+.hello-world{
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 40vh;
+    box-sizing: border-box;
+}
