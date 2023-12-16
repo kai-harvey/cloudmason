@@ -9,24 +9,33 @@ Can be used as a command line tool, or in a CI/CD pipeline.
 
 Get an Ec2 nodejs app up and running in 4 commands.
 
-#### Prereqs:
+#### Step 1: Prereqs:
 
 1. Open an AWS account
 2. Download and set up the AWS CLI (or just set your AWS credentials with enviroment variables)
-3. Run the following command to set up your org:
+3. Buy a domain to deploy apps to
+4. Run the following command to set up your org:
    1. `init-org -name MyOrg -region us-east-1`
-4. Buy a domain to deploy apps to
 
-#### Run:
+#### Step 2: Set up an App
+
+Run the command below to get a starter nodejs template
 
 ```
-node main.js new-app -name MyFirstApp -type asg
+mason starter -p ./myDesktop/HelloWorld -type asg
+```
+
+#### Step 3: Add an App
+
+```
+mason new-app -name MyFirstApp -type asg
 new-instance -app MyFirstApp -domain myfirstapp.com -region us-east-2
-update-app -app MyFirstApp -v 1.0 -path ../PathToANodejsWebApp
+update-app -app MyFirstApp -v 1.0 -path ./myDesktop/HelloWorld
 list-apps
 ```
 You now have an AMI and Cloudformation stack primed and ready to go. 
-Launch the app by running:
+
+#### Step 4: Launch it
 
 ```
 launch -app MyFirstApp -v 1.0 -domain myfirstapp.com
