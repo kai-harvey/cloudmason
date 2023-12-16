@@ -29,7 +29,7 @@ mason starter -p ./myDesktop/HelloWorld -type asg
 
 ```
 mason new-app -name MyFirstApp -type asg
-new-instance -app MyFirstApp -domain myfirstapp.com -region us-east-2
+new-instance -app MyFirstApp -domain myfirstapp.com -region us-east-2 -admin me@gmail.com
 update-app -app MyFirstApp -v 1.0 -path ./myDesktop/HelloWorld
 list-apps
 ```

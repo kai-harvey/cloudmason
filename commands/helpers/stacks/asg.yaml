@@ -20,6 +20,9 @@ Parameters:
     Type: Number
     Description: Max number of Ec2 instances
     Default: 2
+  AdminEmail:
+    Type: String
+    Description: Email for the first admin user
   AmiId:
     Type: AWS::EC2::Image::Id
     Description: Max number of Ec2 instances
@@ -275,6 +278,17 @@ Resources:
       GroupName: data-admin
       UserPoolId: !Ref CognitoUserPool
       Description: "Admin group for creating and managing data sets"
+  AdminUser:
+    Type: AWS::Cognito::UserPoolUser
+    Properties:
+      ClientMetadata: Map
+      DesiredDeliveryMediums: List
+      ForceAliasCreation: Boolean
+      MessageAction: String
+      UserAttributes: List
+      Username: String
+      UserPoolId: String
+      ValidationData: List
 # IAM
   AppEc2Role:
     Type: 'AWS::IAM::Role'
