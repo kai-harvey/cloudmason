@@ -14,6 +14,13 @@ setConfig();
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.all('/*', function (req, res, next) {
+    console.log('Request received');
+    console.log(JSON.stringify(req.headers));
+    next();
+});
+
+
 app.get('/mason', (req, res) => {
     res.send(`Hello from ${process.env.instance} in ${process.env.region}`);
 });
