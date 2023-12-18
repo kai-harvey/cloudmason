@@ -1,7 +1,7 @@
 const CF = require('./helpers/cf');
 const Params = require('./helpers/params');
 const S3 = require('./helpers/s3');
-const Common = require('./common');
+const Common = require('./helpers/common');
 
 exports.delete_app = async function(args){
     // Get App

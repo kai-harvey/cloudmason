@@ -1,1 +1,1 @@
-us-west-2,AMI
+us-east-1,MEANTTO-i-MEANTTO-ELMNTS-XYZ,local

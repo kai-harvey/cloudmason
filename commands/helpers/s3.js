@@ -1,5 +1,6 @@
-const { S3Client,PutObjectCommand,CopyObjectCommand,HeadObjectCommand,DeleteObjectsCommand,ListObjectsV2Command } = require("@aws-sdk/client-s3");
+const { S3Client,PutObjectCommand,CopyObjectCommand,HeadObjectCommand,DeleteObjectsCommand,ListObjectsV2Command,GetObjectCommand } = require("@aws-sdk/client-s3");
 const fs = require('fs');
+
 
 
 exports.uploadInfraFile = async function(fileKey,localPath){
@@ -76,6 +77,36 @@ exports.deleteAppFolder = async function(appName){
     return true;
 }
 
+exports.readFiles = async function(bucketName,prefix,region){
+    const  s3Client= new S3Client({region});
+    const Content = [];
+    const listCommand = new ListObjectsV2Command({
+        Bucket: bucketName,
+        Prefix: prefix,
+    });
+    const listResponse = await s3Client.send(listCommand);
+
+    if (listResponse.Contents) {
+        for (const object of listResponse.Contents) {
+            const getObjectCommand = new GetObjectCommand({
+                Bucket: bucketName,
+                Key: object.Key,
+            });
+
+            // Get the object and read its contents
+            const objectStream = await s3Client.send(getObjectCommand);
+            const fileContent = await streamToString(objectStream.Body);
+            Content.push({ 
+                Key: object.Key, 
+                FileName: object.Key.replace(prefix + '/',''),
+                Content: fileContent,
+                LastModified: object.LastModified
+            });
+        }
+    }
+    return Content;
+}
+
 
 ///////////
 
@@ -101,4 +132,13 @@ async function deleteFolder(bucketName, prefix, region){
 
     // In case of pagination (more than 1000 objects), recursively handle the next batch
     if (listedObjects.IsTruncated) await deleteFolder(bucketName, prefix, region);
+}
+
+async function streamToString(stream) {
+    return new Promise((resolve, reject) => {
+        const chunks = [];
+        stream.on('data', (chunk) => chunks.push(chunk));
+        stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+        stream.on('error', reject);
+    });
 }

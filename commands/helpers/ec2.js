@@ -1,4 +1,5 @@
-const { EC2Client, RunInstancesCommand,CreateImageCommand,TerminateInstancesCommand,DescribeInstanceStatusCommand,DeregisterImageCommand,DescribeImagesCommand,CopyImageCommand } = require("@aws-sdk/client-ec2");
+const { EC2Client, GetConsoleOutputCommand, RunInstancesCommand,CreateImageCommand,TerminateInstancesCommand,DescribeInstanceStatusCommand,DeregisterImageCommand,DescribeImagesCommand,CopyImageCommand } = require("@aws-sdk/client-ec2");
+const { AutoScalingClient, DescribeAutoScalingGroupsCommand } = require("@aws-sdk/client-auto-scaling");
 
 exports.findAMI = async function(image_name,region){
     const client = new EC2Client({ region });
@@ -23,6 +24,31 @@ exports.findAMI = async function(image_name,region){
         return false; 
     };
     return images[0].ImageId;
+}
+
+exports.awsLinuxAMI = function(region){
+    const ami = {
+        "us-east-1": "ami-0759f51a90924c166",
+        "us-east-2": "ami-048e636f368eb3006",
+        "us-west-1": "ami-0a07b0077b66673f1",
+        "us-west-2": "ami-0c00eacddaea828c6",
+        "ap-east-1": "",
+        "ap-south-1": "",
+        "ap-northeast-2": "",
+        "ap-southeast-1": "",
+        "ap-southeast-2": "",
+        "ap-northeast-1": "",
+        "ca-central-1": "ami-02d34aedb8fa9c346",
+        "eu-central-1": "",
+        "eu-west-1": "",
+        "eu-west-2": "",
+        "eu-west-3": "",
+        "eu-north-1": "",
+        "me-south-1": "",
+        "sa-east-1": "ami-0f4e579ad17e32ab7"
+    }[region];
+    if (!ami){ throw 'No AMI found for region ' + region };
+    return ami;
 }
 
 exports.listAMIs = async function(image_name,region){
@@ -93,4 +119,36 @@ exports.checkAMIStatus = async function(image_id,region){
         return false;
     }
 
+}
+
+exports.getConsoleOutput = async function(autoScalingGroupName,region){
+    const autoScalingClient = new AutoScalingClient({ region }); // specify your region
+    const ec2Client = new EC2Client({ region });
+
+    try {
+        // Get instance IDs from Auto Scaling group
+        const describeGroupsCommand = new DescribeAutoScalingGroupsCommand({
+            AutoScalingGroupNames: [autoScalingGroupName]
+        });
+        const groupResponse = await autoScalingClient.send(describeGroupsCommand);
+        const instances = groupResponse.AutoScalingGroups[0].Instances;
+        const instanceIds = instances.map(instance => instance.InstanceId);
+
+        // Get console output for each instance
+        const consoleOutput = [];
+        
+        for (let i=0;i<instanceIds.length;i++){
+            const consoleOutputCommand = new GetConsoleOutputCommand({ InstanceId: instanceIds[i] });
+            const outputResponse = await ec2Client.send(consoleOutputCommand);
+            const output = outputResponse.Output ? Buffer.from(outputResponse.Output, "base64").toString("ascii") : '';
+            consoleOutput.push({
+                instanceId: instanceIds[i],
+                output: output
+            });
+        }
+        return consoleOutput;
+    } catch (error) {
+        console.error("Error fetching EC2 console outputs:", error);
+        throw error;
+    }
 }

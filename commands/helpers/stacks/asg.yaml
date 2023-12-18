@@ -106,6 +106,11 @@ Resources:
           FromPort: 443
           ToPort: 443
           CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
   AppALBSecurityGroupEgress:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
@@ -209,7 +214,7 @@ Resources:
   AppBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Ref InstanceDomain
+      # BucketName: !Ref InstanceDomain
       VersioningConfiguration:
         Status: Enabled
   AppBucketPolicy:
@@ -285,12 +290,6 @@ Resources:
       GroupName: user-admin
       UserPoolId: !Ref CognitoUserPool
       Description: "Admin group for managing users and permissions"
-  CognitoDataAdminGroup:
-    Type: AWS::Cognito::UserPoolGroup
-    Properties:
-      GroupName: data-admin
-      UserPoolId: !Ref CognitoUserPool
-      Description: "Admin group for creating and managing data sets"
   CognitoUserAdmin:
     Type: AWS::Cognito::UserPoolUser
     Properties:
@@ -331,9 +330,15 @@ Resources:
       Roles: 
         - !Ref AppEc2Role
 # Params
-  ParamOrgInfo:
+  ParamRegion:
     Type: 'AWS::SSM::Parameter'
     Properties:
       Name: !Sub '/${AWS::StackName}/region'
       Type: 'String'
-      Value: 'MyOrg'
+      Value: !Sub '${AWS::Region}'
+  ParamS3BUcket:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: !Sub '/${AWS::StackName}/s3Bucket'
+      Type: 'String'
+      Value: !Ref AppBucket

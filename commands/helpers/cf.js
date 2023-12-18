@@ -1,4 +1,4 @@
-const { CloudFormationClient, CreateStackCommand,UpdateStackCommand, DeleteStackCommand, ValidateTemplateCommand,DescribeStacksCommand } = require('@aws-sdk/client-cloudformation');
+const { CloudFormationClient,ListStackResourcesCommand, CreateStackCommand,UpdateStackCommand, DeleteStackCommand, ValidateTemplateCommand,DescribeStacksCommand } = require('@aws-sdk/client-cloudformation');
 
 const fs = require('fs');
 const path = require('path')
@@ -64,7 +64,6 @@ exports.deployS3Stack = async function(stackName,s3Url,params,tag,region){
 exports.updateStack = async function(stackName,s3Url,params,region){
     const client = new CloudFormationClient({ region });
     const cfParams = Object.keys(params).map(k=>{ return { ParameterKey: k, ParameterValue: params[k] } })
-    console.log(s3Url)
     const cmd = {
         StackName: stackName,
         TemplateURL: s3Url,
@@ -139,6 +138,32 @@ exports.stackStatus = async function(stackName, region) {
         }
     } catch (error) {
         console.error("Error fetching CloudFormation stack status:", error);
+        throw error;
+    }
+}
+
+exports.getStackResource = async function(resourceType,stackName,region){
+    const res = {
+        's3': "AWS::S3::Bucket",
+        'asg': "AWS::AutoScaling::AutoScalingGroup",
+        'ec2': "AWS::EC2::Instance"
+    }[resourceType];
+    const client = new CloudFormationClient({ region }); // specify your region
+
+    try {
+        const command = new ListStackResourcesCommand({ StackName: stackName });
+        const response = await client.send(command);
+
+        // Filter the results to find the Auto Scaling group
+        const asgResource = response.StackResourceSummaries.find(resource => resource.ResourceType === res);
+        
+        if (asgResource) {
+            return asgResource.PhysicalResourceId;
+        } else {
+            throw new Error("Auto Scaling Group not found in the specified stack.");
+        }
+    } catch (error) {
+        console.error("Error fetching Auto Scaling Group ID:", error);
         throw error;
     }
 }

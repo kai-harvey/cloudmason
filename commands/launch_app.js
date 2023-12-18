@@ -1,7 +1,7 @@
 const Params = require('./helpers/params');
 const EC2 = require('./helpers/ec2');
 const CF = require('./helpers/cf');
-const Common = require('./common');
+const Common = require('./helpers/common');
 
 exports.main = async function(args){
     const app = await Params.getApp(args.app);
@@ -33,15 +33,15 @@ exports.main = async function(args){
     // I.I WAIT FOR AMI TO BE AVAILABLE
     console.log(`Waiting for AMI ${targetAMI} to be available`);
     let isAvailable = false;
-    for (let i = 0; i < 30; i++){
+    for (let i = 0; i < 15; i++){
         const status = await EC2.checkAMIStatus(targetAMI,targetRegion);
         if (status === true){
-            console.log(`AMI ${targetAMI} available after ${i*15}s`);
+            console.log(`AMI ${targetAMI} available after ${i*30}s`);
             isAvailable = true;
             break;
         }
-        console.log(`\tAMI Status Check ${i} @${i*15}s : Not Available`);
-        await Common.sleep(15);
+        console.log(`\tAMI Status Check ${i} @${i*30}s : Not Available`);
+        await Common.sleep(30);
     }
     if (!isAvailable){ throw new Error('AMI not available after 7 minutes. Try again in a few minutes.') }
 
