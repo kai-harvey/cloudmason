@@ -296,6 +296,12 @@ Resources:
         - EMAIL
       UserPoolId: !Ref CognitoUserPool
       Username: !Ref AdminEmail
+  CognitoUserAdminGroupAttachment:
+    Type: AWS::Cognito::UserPoolUserToGroupAttachment
+    Properties:
+      GroupName: !Ref CognitoUsrAdminGroup
+      UserPoolId: !Ref CognitoUserPool
+      Username: !Ref AdminEmail
 # IAM
   AppEc2Role:
     Type: 'AWS::IAM::Role'
