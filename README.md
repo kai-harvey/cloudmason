@@ -334,23 +334,21 @@ mason starter -type asg -l node -path ../myfirstapp
 
 
 
-### x
+## TODO
 
-`mason new-app <name> <type> [node] [py]`
-
-#### Params
-
-|   Parameter    | Required     |  Type                 | Description                   |
-| -------------- | ------------ | ----------------      | ----------------------------  |
-
-#### Examples
-
-```
-
-```
-
-#### What it does
-
-1. x
+- X Run logs 
+- Read token
+- Verify token
+- DDB connect
+- Fix param naming
+- Add arguments for max ec2 instance and instance type
+- Figure out why cf-templates s3 bucket is being created
+- Customize boot script
+- Pass node/py versions
+- Pass version info to instance
+- Add dev
+- Cloudtrails
+- Prebuild AMI
+- Static site
 
 

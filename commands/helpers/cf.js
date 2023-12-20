@@ -44,6 +44,7 @@ exports.deployS3Stack = async function(stackName,s3Url,params,tag,region){
     // Build Params
     const cfParams = Object.keys(params).map(k=>{ return { ParameterKey: k, ParameterValue: params[k] } })
     const cfTags = Object.keys(tag).map(k=>{ return { Key: k, Value: tag[k] } })
+    console.log(cfParams);
     // Deploy Stack
     const client = new CloudFormationClient({ region });
     const input = {

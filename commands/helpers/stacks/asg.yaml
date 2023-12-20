@@ -23,7 +23,6 @@ Parameters:
   AdminEmail:
     Type: String
     Description: Email for the first admin user
-    Default: kaikh611@gmail.com
   AmiId:
     Type: AWS::EC2::Image::Id
     Description: Max number of Ec2 instances
@@ -296,7 +295,7 @@ Resources:
       DesiredDeliveryMediums:
         - EMAIL
       UserPoolId: !Ref CognitoUserPool
-      Username: 'kaikh611@gmail.com'
+      Username: !Ref AdminEmail
 # IAM
   AppEc2Role:
     Type: 'AWS::IAM::Role'
@@ -317,9 +316,24 @@ Resources:
             Version: "2012-10-17"
             Statement:
               - Effect: Allow
+                Action: 'ssm:GetParametersByPath'
+                # Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/*'
+                Resource: '*'
+              - Effect: Allow
+                Action: 'ssm:GetParameters'
+                Resource: '*'
+              - Effect: Allow
+                Action: 'ssm:GetParameter'
+                Resource: '*'
+              - Effect: Allow
                 Action:
                   - s3:GetObject
+                  - s3:GetObjectAttributes
                   - s3:ListBucket
+                  - s3:ListBucketVersions
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:DeleteObjectVersion
                 Resource:
                   - !Sub arn:aws:s3:::${AppBucket}
                   - !Sub arn:aws:s3:::${AppBucket}/*
@@ -342,3 +356,9 @@ Resources:
       Name: !Sub '/${AWS::StackName}/s3Bucket'
       Type: 'String'
       Value: !Ref AppBucket
+  ParamUserPoolId:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: !Sub '/${AWS::StackName}/userpoolid'
+      Type: 'String'
+      Value: !Ref CognitoUserPool
