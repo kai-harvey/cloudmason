@@ -1,1 +1,1 @@
-us-west-2,MEANTTO-i-TEST-ELMNTS-XYZ,true
+us-west-2,MEANTTO-i-TEST-ELMNTS-XYZ,y

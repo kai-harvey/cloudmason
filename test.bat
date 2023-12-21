@@ -4,7 +4,7 @@
 @REM node main.js new-instance -app meantto -domain test.elmnts.xyz -region us-west-2 -admin kkh@kkh.io
 @REM node main.js update-app -app meantto -v 1.0 -path ./commands/starters/asg_node
 @REM node main.js launch -app meantto -v 1.0 -domain test.elmnts.xyz
-node main.js inspect -app meantto -domain test.elmnts.xyz -run
+node main.js inspect -app meantto -domain test.elmnts.xyz -boot
 @REM node main.js isvalid -p ./commands/helpers/stacks/asg.yaml
 @REM node main.js update-stack -app meantto -v 1.0 -stack ./commands/helpers/stacks/asg.yaml
 @REM node main.js reset-stack -app meantto
