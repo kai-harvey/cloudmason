@@ -101,31 +101,6 @@ exports.verifyUser = async function(req,res,next){
         req.status(403).send('Forbidden: Invalid Token');
         return;
     }
-
-    // const jwt_headers = token.split('.')[0]
-    // const decoded_jwt_headers = Buffer.from(jwt_headers, 'base64').toString('utf8');
-    // const { kid } = JSON.parse(decoded_jwt_headers);
-    // const verificationURL = `https://public-keys.auth.elb.${process.env.$APP_REGION}.amazonaws.com/${kid}`
-    // const pbRes = await fetch(verificationURL);
-    // const pubKey = await pbRes.text();
-    // const isValid = JWS.verify(token,'ES256', pubKey);
-    // if (!isValid) { 
-    //     // req.status(403).send('Forbidden: Invalid Token');
-    //     return { ok: false }
-    // }
-
-    // // Parse Token Payload
-    // const jwt_pay = token.split('.')[1]
-    // const strPayload = Buffer.from(jwt_pay, 'base64').toString('utf8');
-    // const payload = JSON.parse(strPayload);
-    // console.log(payload);
-    // res.locals.user = {
-    //     ok: true,
-    //     email: payload.email,
-    //     username: payload.username,
-    //     ok: true
-    // }
-    // res.locals.user.ok = true;
     return next();
 }
 

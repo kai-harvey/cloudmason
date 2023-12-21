@@ -83,28 +83,30 @@ exports.readFiles = async function(bucketName,prefix,region){
     const listCommand = new ListObjectsV2Command({
         Bucket: bucketName,
         Prefix: prefix,
+        MaxKeys: 50
     });
     const listResponse = await s3Client.send(listCommand);
 
-    if (listResponse.Contents) {
-        for (const object of listResponse.Contents) {
-            const getObjectCommand = new GetObjectCommand({
-                Bucket: bucketName,
-                Key: object.Key,
-            });
+    if (!listResponse.Contents) { return []}
+    
 
-            // Get the object and read its contents
-            const objectStream = await s3Client.send(getObjectCommand);
-            const fileContent = await streamToString(objectStream.Body);
-            Content.push({ 
-                Key: object.Key, 
-                FileName: object.Key.replace(prefix + '/',''),
-                Content: fileContent,
-                LastModified: object.LastModified
-            });
-        }
-    }
-    return Content;
+    const proms = listResponse.Contents.map(object=>{ 
+        return s3Client.send(new GetObjectCommand({
+            Bucket: bucketName,
+            Key: object.Key,
+        })).then(r=>{
+            return streamToString(r.Body).then(fileContent=>{
+                Content.push({ 
+                    Key: object.Key, 
+                    FileName: object.Key.replace(prefix + '/',''),
+                    Content: fileContent,
+                    LastModified: object.LastModified
+                });
+            })
+        });
+    })
+    await Promise.all(proms);
+    return Content.sort((a,b)=>{ return new Date(a.LastModified) - new Date(b.LastModified)  });
 }
 
 
