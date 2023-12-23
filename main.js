@@ -29,10 +29,11 @@ const Commands = {
         exec: require('./commands/new_instance').main,
         args: [
             {n: 'app', desc: 'Name of existing app', pattern: `[A-Za-z]{2,20}`, r: true},
-            // {n: 'name', desc: 'Name of existing app', pattern: `[A-Za-z]{2,20}`, r: true},
             {n: 'domain', desc: 'Domain to deploy instance behind', r: true},
             {n: 'region', desc: 'Region to deploy instance in', r: true},
-            {n: 'admin', desc: 'Email address of first admin user', r: true}
+            {n: 'admin', desc: 'Email address of first admin user', r: true},
+            {n: 'max', desc: 'Max number of Ec2 instances to allow in ASG'},
+            {n: 'ins', desc: 'Instance type. Default t2.small', r: false}
         ]
     },
     'update-app': {
