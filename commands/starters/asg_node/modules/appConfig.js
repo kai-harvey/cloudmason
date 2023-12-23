@@ -1,5 +1,8 @@
 const { SSMClient,GetParametersByPathCommand } = require("@aws-sdk/client-ssm");
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client, PutObjectCommand, ListObjectsV2Command } = require("@aws-sdk/client-s3");
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBDocumentClient, QueryCommand } = require("@aws-sdk/lib-dynamodb");
+
 const fetch = require('node-fetch');
 const JWS = require('jws');
 
@@ -75,8 +78,8 @@ exports.verifyUser = async function(req,res,next){
         return next();
     }
     if (!req.headers['x-amzn-oidc-data']){
-        console.log(req.url);
-        return next;
+        res.status(200).send('OK');
+        return
     }
 
     // Extract User Info from Access Token
@@ -102,6 +105,41 @@ exports.verifyUser = async function(req,res,next){
         return;
     }
     return next();
+}
+
+exports.checkDDBConnection = async function(){
+    const client = new DynamoDBClient({ region: process.env.$APP_REGION }); // Replace with your region
+    const ddbDocClient = DynamoDBDocumentClient.from(client);
+    try {
+        const params = {
+            TableName: process.env.$APP_DDBTABLE,
+            KeyConditionExpression: "pk = :pkValue",
+            ExpressionAttributeValues: {
+                ":pkValue": 'test'
+            }
+        };
+
+        const command = new QueryCommand(params);
+        const response = await ddbDocClient.send(command);
+        console.log("Query response:", response);
+        return { ok: true, msg: response.Items.length };
+    } catch (error) {
+        return { ok: false, msg: error };
+    }
+}
+
+exports.checkS3Connection = async function(){
+    const client = new S3Client({ region: process.env.$APP_REGION }); // Replace with your region
+    const command = new ListObjectsV2Command({
+        Bucket: process.env.$APP_S3BUCKET,
+        MaxKeys: 2
+    });
+    try {
+        const response = await client.send(command);
+        return { ok: true, msg: response.Contents.length };
+    } catch (error) {
+        throw { ok: false, msg: error };
+    }
 }
 
 function decode(token,index=0){

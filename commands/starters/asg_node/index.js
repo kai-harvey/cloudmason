@@ -10,24 +10,32 @@ const PORT = 8080;
 // Use JSON
 app.use(express.json());
 
-// Protect Routes: User email and groups available in req.user
+// Protect Routes
+// User info and cognito groups available in the res.local.user object
 app.use(Infra.verifyUser);
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
-// app.use('/a',express.static(path.join(__dirname, 'public')));
 
-// app.get('/', (req, res, next) => {
-//     if (req.headers['x-amzn-oidc-data'] || process.env.$IS_LOCAL == 'y'){
-//         res.redirect('/a');
-//     } else {
-//         next();
-//     }
-// });
-
-app.get('/api/health', (req, res) => {
-    res.send('OK:' + process.env.$APP_S3BUCKET);
+app.get('/api/health', async (req, res) => {
+    let results = ''
+    const ddB = Infra.checkDDBConnection().then((res)=>{results += `DDB Connection OK: ${res.ok} [${res.msg}]\n` });
+    const s3 = Infra.checkS3Connection().then((res)=>{results += `S3 Connection OK: ${res.ok} [${res.msg}]\n` });
+    Promise.all([ddB,s3]).then(()=>{
+        res.send(results);
+    });
 });
+
+app.get('/config', async (req, res) => {
+    const cnf = {
+        app: process.env.$APP_ID,
+        region: process.env.$APP_REGION,
+        user: res.locals.user,
+        version: process.env.$APP_VERSION,
+        isLocal: process.env.$IS_LOCAL
+    };
+    res.json(cnf);
+})
 
 app.get('/a/whoami', async (req, res) => {
     const logs = [
