@@ -9,28 +9,37 @@ Can be used as a command line tool, or in a CI/CD pipeline.
 
 Get an Ec2 nodejs app up and running in 4 commands.
 
-#### Prereqs:
+#### Step 1: Prereqs:
 
 1. Open an AWS account
 2. Download and set up the AWS CLI (or just set your AWS credentials with enviroment variables)
-3. Run the following command to set up your org:
+3. Buy a domain to deploy apps to
+4. Run the following command to set up your org:
    1. `init-org -name MyOrg -region us-east-1`
-4. Buy a domain to deploy apps to
 
-#### Run:
+#### Step 2: Set up an App
+
+Run the command below to get a starter nodejs template
 
 ```
-node main.js new-app -name MyFirstApp -type asg
-new-instance -app MyFirstApp -domain myfirstapp.com -region us-east-2
-update-app -app MyFirstApp -v 1.0 -path ../PathToANodejsWebApp
+mason starter -p ./myDesktop/HelloWorld -type asg
+```
+
+#### Step 3: Add an App
+
+```
+mason new-app -name MyFirstApp -type asg
+new-instance -app MyFirstApp -domain myfirstapp.com -region us-east-2 -admin me@gmail.com
+update-app -app MyFirstApp -v 1.0 -path ./myDesktop/HelloWorld
 list-apps
 ```
 You now have an AMI and Cloudformation stack primed and ready to go. 
-Launch the app by running:
+
+#### Step 4: Launch it
 
 ```
 launch -app MyFirstApp -v 1.0 -domain myfirstapp.com
-inspect -app MyFirstApp -domain myfirstapp.com
+inspect -app MyFirstApp -domain myfirstapp.com -boot
 ```
 
 The `launch` command deploy the specified version of your application to the specified domain (instance). 
@@ -143,10 +152,11 @@ mason new-app -name MyFirstApp -type asg -node
 
 ### new-instance
 
-`mason new-instance -app -name -domain -region`
+`mason new-instance -app -name -domain -region -admin`
 
 Creates a new instance in a specified region. An instance is a deployment of an application. For example, MyFirstApp could have a test, UAT, and prod instance in us-east-1,us-east-2,and us-west-1.
 
+Use -admin to specify the first admin user who will have access to set up other users.
 
 #### Params
 
@@ -156,6 +166,7 @@ Creates a new instance in a specified region. An instance is a deployment of an 
 | **name** | Y | string | Instance name (ex., test, uat, etc). Letters only |
 | **domain** | Y | string | Name of a subdomain or domain to deploy behind |
 | **region** | Y | AWS region | region to deploy the instance in |
+| **admin** | Y | email | email adress of first admin user |
 
 #### Examples
 
@@ -281,11 +292,12 @@ mason update-stack -app MyFirstApp -default -stack ../myfirstapp/stack.json
 
 ### inspect
 
-`mason inspect -app -domain`
+`mason inspect -app -domain [-run or -boot]`
 
 Get stack status and EC2 console logs for an instance.
-
 Useful for debugging issues with application boot up. Console output will 
+
+To get run logs, the application must write logs to S3 in the logs/run folder. See the starter nodejs app for an example. 
 
 #### Params
 
@@ -293,6 +305,8 @@ Useful for debugging issues with application boot up. Console output will
 | -------------- | ------------ | ----------------      | ----------------------------  |
 | **-app** | Y | string | App name |
 | **-domain** | Y | string | Domain to inspect | 
+| -boot | N | null | If included, returns logs from the instance start up | 
+| -run | N | null | If included, returns run logs stored by the application in the s3 bucket at logs/run/* | 
 
 #### Examples
 
@@ -325,23 +339,22 @@ mason starter -type asg -l node -path ../myfirstapp
 
 
 
-### x
+## TODO
 
-`mason new-app <name> <type> [node] [py]`
-
-#### Params
-
-|   Parameter    | Required     |  Type                 | Description                   |
-| -------------- | ------------ | ----------------      | ----------------------------  |
-
-#### Examples
-
-```
-
-```
-
-#### What it does
-
-1. x
+- [x] Run logs 
+- [x] Read token
+- [x] Verify token
+- [] Get user groups
+- [] Deregistering in home region
+- [] DDB connect
+- [] Add arguments for max ec2 instance and instance type
+- [] Figure out why cf-templates s3 bucket is being created
+- [] Customize boot script
+- [] Pass node/py versions
+- [] Pass version info to instance
+- [] Add dev
+- [] Cloudtrails
+- [] Prebuild AMI
+- [] Static site
 
 

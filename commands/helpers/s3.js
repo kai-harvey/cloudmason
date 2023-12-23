@@ -1,5 +1,6 @@
-const { S3Client,PutObjectCommand,CopyObjectCommand,HeadObjectCommand,DeleteObjectsCommand,ListObjectsV2Command } = require("@aws-sdk/client-s3");
+const { S3Client,PutObjectCommand,CopyObjectCommand,HeadObjectCommand,DeleteObjectsCommand,ListObjectsV2Command,GetObjectCommand } = require("@aws-sdk/client-s3");
 const fs = require('fs');
+
 
 
 exports.uploadInfraFile = async function(fileKey,localPath){
@@ -76,6 +77,38 @@ exports.deleteAppFolder = async function(appName){
     return true;
 }
 
+exports.readFiles = async function(bucketName,prefix,region){
+    const  s3Client= new S3Client({region});
+    const Content = [];
+    const listCommand = new ListObjectsV2Command({
+        Bucket: bucketName,
+        Prefix: prefix,
+        MaxKeys: 50
+    });
+    const listResponse = await s3Client.send(listCommand);
+
+    if (!listResponse.Contents) { return []}
+    
+
+    const proms = listResponse.Contents.map(object=>{ 
+        return s3Client.send(new GetObjectCommand({
+            Bucket: bucketName,
+            Key: object.Key,
+        })).then(r=>{
+            return streamToString(r.Body).then(fileContent=>{
+                Content.push({ 
+                    Key: object.Key, 
+                    FileName: object.Key.replace(prefix + '/',''),
+                    Content: fileContent,
+                    LastModified: object.LastModified
+                });
+            })
+        });
+    })
+    await Promise.all(proms);
+    return Content.sort((a,b)=>{ return new Date(a.LastModified) - new Date(b.LastModified)  });
+}
+
 
 ///////////
 
@@ -101,4 +134,13 @@ async function deleteFolder(bucketName, prefix, region){
 
     // In case of pagination (more than 1000 objects), recursively handle the next batch
     if (listedObjects.IsTruncated) await deleteFolder(bucketName, prefix, region);
+}
+
+async function streamToString(stream) {
+    return new Promise((resolve, reject) => {
+        const chunks = [];
+        stream.on('data', (chunk) => chunks.push(chunk));
+        stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+        stream.on('error', reject);
+    });
 }

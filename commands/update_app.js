@@ -1,5 +1,6 @@
 const path = require('path');
-const fs = require('fs')
+const fs = require('fs');
+const EC2 = require('./helpers/ec2');
 const { EC2Client, RunInstancesCommand,CreateImageCommand,TerminateInstancesCommand,DescribeInstanceStatusCommand,DeregisterImageCommand,DescribeImagesCommand,CopyImageCommand } = require("@aws-sdk/client-ec2");
 
 const AdmZip = require("adm-zip");
@@ -46,7 +47,8 @@ exports.main = async function(args){
     // Launch ec2
     const orgParams = await Params.getOrgConfig();
 
-    const awsLinuxAMI = await findLinuxAMI(process.env.orgRegion);
+    // const awsLinuxAMI = await findLinuxAMI(process.env.orgRegion);
+    const awsLinuxAMI = EC2.awsLinuxAMI(process.env.orgRegion);
     const instance_id = await launchInstance({
         app: app.name,
         linuxAMI: awsLinuxAMI,

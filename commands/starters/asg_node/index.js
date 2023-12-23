@@ -1,34 +1,57 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const Infra = require('./modules/appConfig.js');
 
 // Port must be 8080
 const app = express();
 const PORT = 8080;
 
-// Retrieve the config values
-setConfig();
+// Use JSON
+app.use(express.json());
 
-
+// Protect Routes
+// User info and cognito groups available in the res.local.user object
+app.use(Infra.verifyUser);
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/mason', (req, res) => {
-    res.send(`Hello from ${process.env.instance} in ${process.env.region}`);
+app.get('/api/health', async (req, res) => {
+    let results = ''
+    const ddB = Infra.checkDDBConnection().then((res)=>{results += `DDB Connection OK: ${res.ok} [${res.msg}]\n` });
+    const s3 = Infra.checkS3Connection().then((res)=>{results += `S3 Connection OK: ${res.ok} [${res.msg}]\n` });
+    Promise.all([ddB,s3]).then(()=>{
+        res.send(results);
+    });
 });
 
-app.listen(PORT, () => {
-    console.log(`${process.env.instance} running on http://localhost:${PORT} in ${process.env.region}`);
+app.get('/config', async (req, res) => {
+    const cnf = {
+        app: process.env.$APP_ID,
+        region: process.env.$APP_REGION,
+        user: res.locals.user,
+        version: process.env.$APP_VERSION,
+        isLocal: process.env.$IS_LOCAL
+    };
+    res.json(cnf);
+})
+
+app.get('/a/whoami', async (req, res) => {
+    const logs = [
+        `access:${req.headers['x-amzn-oidc-accesstoken']}`,
+        `oidc:${req.headers['x-amzn-oidc-data']}`,
+        `user:${req.headers['x-amzn-oidc-identity']}`
+    ];
+    Infra.log(logs.join('\n'),true);
+    res.json(res.locals.user);
 });
 
-function setConfig(){
-    const configPath = path.resolve(__dirname,'mason.txt');
-    const configText = fs.readFileSync(configPath,'utf-8');
-    const configLines = configText.split(',');
-    process.env.region = configLines[0];
-    process.env.instance = configLines[1];
-    console.log(process.env.region)
-    console.log(process.env.instance)
-}
-
+// Start Server
+Infra.setParams(__dirname).then(()=>{
+    console.log(`Starting Server for ${process.env.$APP_ID} in ${process.env.$APP_REGION}`,true);
+    app.listen(PORT, async () => {
+        console.log(`${process.env.$APP_ID} running on http://localhost:${PORT} in ${process.env.$APP_REGION}`);
+        Infra.log(`Boot Complete ${process.env.$APP_ID}@${process.env.$APP_REGION}`,true);
+    });
+});

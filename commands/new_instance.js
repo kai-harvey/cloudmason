@@ -45,7 +45,8 @@ exports.main = async function(args){
             InstanceSubnets: [],
             InstanceRootDomain: hostedZoneId,
             InstanceDomain: args.domain,
-            MaxEc2Instances: args.max || 2
+            MaxEc2Instances: args.maxec2 || 2,
+            AdminEmail: args.admin
         }
     }
 
