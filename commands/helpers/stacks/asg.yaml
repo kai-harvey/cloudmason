@@ -20,12 +20,19 @@ Parameters:
     Type: Number
     Description: Max number of Ec2 instances
     Default: 2
+  EC2InstanceType:
+    Type: String
+    Description: EC2 Instance Type
+    Default: t2.small
   AdminEmail:
     Type: String
     Description: Email for the first admin user
   AmiId:
     Type: AWS::EC2::Image::Id
     Description: Max number of Ec2 instances
+  AppVersion:
+    Type: String
+    Description: Major.minor.build
   
 
 Resources:
@@ -191,7 +198,7 @@ Resources:
               source start.sh
         ImageId: !Ref AmiId
         DisableApiTermination: "true"
-        InstanceType: t2.small
+        InstanceType: !Ref EC2InstanceType
         SecurityGroupIds: 
           - !Ref AppEc2SecurityGroup
   AppEc2SecurityGroup:
@@ -209,6 +216,21 @@ Resources:
       Description: Allow 8080 from ALB
       IpProtocol: "-1"
       SourceSecurityGroupId: !Ref AppALBSecurityGroup
+# DynamoDB Table
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
 # S3 App Bucket
   AppBucket:
     Type: AWS::S3::Bucket
@@ -281,8 +303,6 @@ Resources:
       # Domain: !Sub '${AWS::StackName}'
       Domain: !Sub 'meantto-auth'
       UserPoolId: !Ref CognitoUserPool
-      # CustomDomainConfig:
-      #   CertificateArn: !Ref ACMDomainCert
   CognitoUsrAdminGroup:
     Type: AWS::Cognito::UserPoolGroup
     Properties:
@@ -323,14 +343,16 @@ Resources:
             Statement:
               - Effect: Allow
                 Action: 'ssm:GetParametersByPath'
-                # Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/*'
-                Resource: '*'
+                Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}*'
+                # Resource: '*'
               - Effect: Allow
                 Action: 'ssm:GetParameters'
-                Resource: '*'
+                # Resource: '*'
+                Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}*'
               - Effect: Allow
                 Action: 'ssm:GetParameter'
-                Resource: '*'
+                # Resource: '*'
+                Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}*'
               - Effect: Allow
                 Action:
                   - s3:GetObject
@@ -343,6 +365,19 @@ Resources:
                 Resource:
                   - !Sub arn:aws:s3:::${AppBucket}
                   - !Sub arn:aws:s3:::${AppBucket}/*
+              - Effect: Allow
+                Action:
+                  - dynamodb:BatchGetItem
+                  - dynamodb:BatchWriteItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:GetItem
+                  - dynamodb:GetRecords
+                  - dynamodb:PutItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:UpdateItem
+                Resource:
+                  - !GetAtt DynamoDBTable.Arn
   AppEc2Profile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -368,3 +403,15 @@ Resources:
       Name: !Sub '/${AWS::StackName}/userpoolid'
       Type: 'String'
       Value: !Ref CognitoUserPool
+  ParamDDTable:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: !Sub '/${AWS::StackName}/ddbtable'
+      Type: 'String'
+      Value: !Ref DynamoDBTable
+  ParamVersion:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: !Sub '/${AWS::StackName}/version'
+      Type: 'String'
+      Value: !Ref AppVersion

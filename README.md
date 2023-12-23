@@ -152,7 +152,7 @@ mason new-app -name MyFirstApp -type asg -node
 
 ### new-instance
 
-`mason new-instance -app -name -domain -region -admin`
+`mason new-instance -app -name -domain -region -admin -max -ins`
 
 Creates a new instance in a specified region. An instance is a deployment of an application. For example, MyFirstApp could have a test, UAT, and prod instance in us-east-1,us-east-2,and us-west-1.
 
@@ -167,6 +167,9 @@ Use -admin to specify the first admin user who will have access to set up other 
 | **domain** | Y | string | Name of a subdomain or domain to deploy behind |
 | **region** | Y | AWS region | region to deploy the instance in |
 | **admin** | Y | email | email adress of first admin user |
+| max | N | int | Maximum number of Ec2 instance to allow in the ASG. Higher number will result in better performance but possibly higher charges. Minimum is 2 to allow for proper refresh. |
+| ins | N | string | Ec2 instance type. Default is t2.small |
+
 
 #### Examples
 
@@ -344,17 +347,21 @@ mason starter -type asg -l node -path ../myfirstapp
 - [x] Run logs 
 - [x] Read token
 - [x] Verify token
-- [] Get user groups
-- [] Deregistering in home region
-- [] DDB connect
-- [] Add arguments for max ec2 instance and instance type
-- [] Figure out why cf-templates s3 bucket is being created
+- [x] Get user groups
+- [x] DDB connect
+- [x] Fix starter routes
+- [x] Add arguments for max ec2 instance and instance type
 - [] Customize boot script
-- [] Pass node/py versions
-- [] Pass version info to instance
+- [] Custom Domain for auth
+- [x] Secure param permissions
+- [a] Pass node/py versions
+- [X] Pass version info to instance
 - [] Add dev
+- [] Add Admin
 - [] Cloudtrails
 - [] Prebuild AMI
 - [] Static site
+- [] Deregistering in home region
+- [] cf-templates s3 bucket creation
 
 

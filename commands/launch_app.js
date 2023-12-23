@@ -52,6 +52,7 @@ exports.main = async function(args){
 
     // Update Instance CF Params to Instance Region AMI ID
     targetInstance.cfParams.AmiId = targetAMI;
+    targetInstance.cfParams.AppVersion = `${args.v}.${targetVersion.currentBuild}`;
     await Params.updateInstanceV(args.app,args.domain,args.v,targetVersion.currentBuild,targetAMI,targetVersion.baseAMI_Name);
 
     // Check whether stack exists
