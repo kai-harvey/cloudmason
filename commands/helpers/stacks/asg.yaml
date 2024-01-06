@@ -33,6 +33,9 @@ Parameters:
   AppVersion:
     Type: String
     Description: Major.minor.build
+  InstanceEnvironment:
+    Type: String
+    Description: Instance enviroment (prod,dev). Setting prod will enable advanced security features.
   
 
 Resources:
@@ -415,3 +418,9 @@ Resources:
       Name: !Sub '/${AWS::StackName}/version'
       Type: 'String'
       Value: !Ref AppVersion
+  ParamEnvironment:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: !Sub '/${AWS::StackName}/env'
+      Type: 'String'
+      Value: !Ref InstanceEnvironment

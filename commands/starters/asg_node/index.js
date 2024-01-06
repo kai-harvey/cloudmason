@@ -32,19 +32,25 @@ app.get('/config', async (req, res) => {
         region: process.env.$APP_REGION,
         user: res.locals.user,
         version: process.env.$APP_VERSION,
-        isLocal: process.env.$IS_LOCAL
+        env: process.env.$APP_ENV
     };
     res.json(cnf);
 })
 
-app.get('/a/whoami', async (req, res) => {
+app.get('/whoami', async (req, res) => {
     const logs = [
         `access:${req.headers['x-amzn-oidc-accesstoken']}`,
         `oidc:${req.headers['x-amzn-oidc-data']}`,
         `user:${req.headers['x-amzn-oidc-identity']}`
     ];
-    Infra.log(logs.join('\n'),true);
+    // Infra.log(logs.join('\n'),true);
+    console.log(logs.join('\n'));
     res.json(res.locals.user);
+});
+
+app.get('/log', async (req, res) => {
+    console.log('log>>',req.query);
+    res.send('OK');
 });
 
 // Start Server

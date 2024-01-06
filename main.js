@@ -33,7 +33,8 @@ const Commands = {
             {n: 'region', desc: 'Region to deploy instance in', r: true},
             {n: 'admin', desc: 'Email address of first admin user', r: true},
             {n: 'max', desc: 'Max number of Ec2 instances to allow in ASG'},
-            {n: 'ins', desc: 'Instance type. Default t2.small', r: false}
+            {n: 'ins', desc: 'Instance type. Default t2.small', r: false},
+            {n: 'env', desc: 'Enviroment (dev,prod). This value is passed to the application.', r: false}
         ]
     },
     'update-app': {
