@@ -41,23 +41,26 @@ exports.delete_instance = async function(args){
     const targetInstance = app.instances.find(ins=>{ return ins.domain.toLowerCase() == args.domain.toLowerCase() });
     if (!targetInstance){ console.log(`No instance of ${args.app} named ${args.domain}`); throw new Error('Invalid Instance')}
     
-    // Delete S3 App Bucket
-    const bucketName = await CF.getStackResource('s3',targetInstance.stackName,targetInstance.region);
-    console.log('Emptying S3 Bucket for ' + bucketName)
-    await S3.emptyBucket(bucketName,targetInstance.region);
-
-    //  Delete Stack
-    const stackName = targetInstance.stackName;
-    console.log(`Deleting ${args.app} instance ${args.domain} in ${targetInstance.region}`)
-    const delOK = await CF.delete(stackName, targetInstance.region);
-    if (delOK){
-        console.log('Delete Successful')
-    } else {
-        return;
+    // Check if Stack Exists
+    const stackExists = await CF.stackExists(targetInstance.stackName,targetInstance.region);
+    console.log(`Stack Exists: ${stackExists}`)
+    if (stackExists === true){
+        // Delete S3 App Bucket
+        const bucketName = await CF.getStackResource('s3',targetInstance.stackName,targetInstance.region);
+        console.log('Emptying S3 Bucket for ' + bucketName)
+        await S3.emptyBucket(bucketName,targetInstance.region);
+        //  Delete Stack
+        const stackName = targetInstance.stackName;
+        console.log(`Deleting ${args.app} instance ${args.domain} in ${targetInstance.region}`)
+        const delOK = await CF.delete(stackName, targetInstance.region);
+        if (delOK){
+            console.log('Delete Successful')
+        } else {
+            return;
+        }
+        // Deregister AMIs
+        await Common.prune_amis(args.app,targetInstance.version,targetInstance.region,true);
     }
-
-    // Deregister AMIs
-    await Common.prune_amis(args.app,targetInstance.version,targetInstance.region,true);
 
     //  Update Params
     await Params.deleteInstance(args.app,args.domain);

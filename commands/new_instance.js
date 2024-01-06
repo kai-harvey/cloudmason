@@ -48,7 +48,7 @@ exports.main = async function(args){
             MaxEc2Instances: args.max || 2,
             AdminEmail: args.admin,
             EC2InstanceType: args.ins || 't3.small',
-            Env: args.env || 'dev'
+            InstanceEnvironment: args.env || 'dev'
         }
     }
 
