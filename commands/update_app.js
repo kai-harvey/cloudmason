@@ -54,7 +54,9 @@ exports.main = async function(args){
         linuxAMI: awsLinuxAMI,
         version: args.v,
         sec_group: orgParams.buildSecGroup,
-        iam: orgParams.buildInstanceProfile
+        iam: orgParams.buildInstanceProfile,
+        node: app.nodeV,
+        py: app.pyV
     });
 
     await waitUntilInstanceReady(instance_id,process.env.orgRegion);
@@ -118,54 +120,14 @@ async function prepZip(appPath){
     return zipPath;
 }
 
-async function findLinuxAMI(region){
-    // aws ec2 describe-images --owners amazon --filters "Name=name,Values=amzn*" --query 'sort_by(Images, &CreationDate)[].Name'
-    console.log('Locating AMI for AWS Linux in ' + region)
-    const client = new EC2Client({region});
-    const input = { // DescribeImagesRequest
-        Owners: ['amazon'],
-        Filters: [
-            {
-                Name: "name",
-                Values: ["al2023-ami-2023.2.20230920.1-kernel-6.1-x86_64"], // Pattern for Amazon Linux 2 AMI
-            },
-            {
-                Name: "state",
-                Values: ["available"],
-            },
-            { 
-                Name: "architecture",
-                Values: [ "x86_64" ],
-            },
-            {
-                Name: "virtualization-type",
-                Values: ["hvm"]
-            }
-        ],
-        // al2023-ami-2023.2.20230920.1-kernel-6.1-x86_64
-        // ImageIds: ['ami-03a6eaae9938c858c'],
-        IncludeDeprecated: false,
-        DryRun: false,
-        // MaxResults: 16
-    };
-    const command = new DescribeImagesCommand(input);
-    const response = await client.send(command);
-    const images = response.Images;
-
-    if (!images[0]){ 
-        console.log('Could not find AWS Linux 2023 base image')
-        throw 'Could not find AWS Linux 2023 base image'
-    };
-
-    return images[0].ImageId;
-}
-
 async function launchInstance(launchParams){
     console.log('Launching Instance in ' + process.env.orgRegion);
-    
+    const nodeRepo = launchParams.node === '' ? 'echo default_version' : `https://rpm.nodesource.com/setup_${launchParams.node}.x | sudo bash -`;
     const user_data = [
         `#!/bin/bash -xe`,
+        nodeRepo,
         `yum -y install nodejs`,
+        `yum -y install python3`,
         `yum -y install unzip`,
         `cd /home/ec2-user`,
         `aws s3 cp s3://${process.env.orgBucket}/apps/${launchParams.app.toLowerCase()}/${launchParams.version}/app.zip .`,

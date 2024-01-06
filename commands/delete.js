@@ -41,6 +41,11 @@ exports.delete_instance = async function(args){
     const targetInstance = app.instances.find(ins=>{ return ins.domain.toLowerCase() == args.domain.toLowerCase() });
     if (!targetInstance){ console.log(`No instance of ${args.app} named ${args.domain}`); throw new Error('Invalid Instance')}
     
+    // Delete S3 App Bucket
+    const bucketName = await CF.getStackResource('s3',targetInstance.stackName,targetInstance.region);
+    console.log('Emptying S3 Bucket for ' + bucketName)
+    await S3.emptyBucket(bucketName,targetInstance.region);
+
     //  Delete Stack
     const stackName = targetInstance.stackName;
     console.log(`Deleting ${args.app} instance ${args.domain} in ${targetInstance.region}`)

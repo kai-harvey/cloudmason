@@ -13,9 +13,8 @@ exports.main = async function(args){
     }
 
     // Check Lang Selection
-    if (args.py && args.node){
-        console.log('Cannot set both nodejs and python. Select one.');
-        throw new Error('Invalid language selection')
+    if (!/[0-9]{1,2}/.test(args.node)){
+        throw new Error('Invalid nodejs version. Use major version only (14,15,16)')
     }
 
     // Prep Stack

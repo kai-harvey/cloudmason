@@ -68,6 +68,15 @@ exports.copyInfraFile = async function(srcKey,destKey){
     return true;
 }
 
+exports.emptyBucket = async function(bucketName,region){
+    await deleteFolder(
+        bucketName,
+        `*`,
+        region
+    )
+    return true;
+}
+
 exports.deleteAppFolder = async function(appName){
     await deleteFolder(
         process.env.orgBucket,

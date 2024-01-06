@@ -351,11 +351,14 @@ mason starter -type asg -l node -path ../myfirstapp
 - [x] DDB connect
 - [x] Fix starter routes
 - [x] Add arguments for max ec2 instance and instance type
-- [] Customize boot script
+- [X] Customize boot script
 - [] Custom Domain for auth
 - [x] Secure param permissions
-- [a] Pass node/py versions
+- [X] Pass node/py versions
 - [X] Pass version info to instance
+- [X] Fix Delete App
+- [X] Update default instance
+- [] Fix logs
 - [] Add dev
 - [] Add Admin
 - [] Cloudtrails
