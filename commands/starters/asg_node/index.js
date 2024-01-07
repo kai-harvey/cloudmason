@@ -43,7 +43,6 @@ app.get('/whoami', async (req, res) => {
         `oidc:${req.headers['x-amzn-oidc-data']}`,
         `user:${req.headers['x-amzn-oidc-identity']}`
     ];
-    // Infra.log(logs.join('\n'),true);
     console.log(logs.join('\n'));
     res.json(res.locals.user);
 });
@@ -58,6 +57,6 @@ Infra.setParams(__dirname).then(()=>{
     console.log(`Starting Server for ${process.env.$APP_ID} in ${process.env.$APP_REGION}`,true);
     app.listen(PORT, async () => {
         console.log(`${process.env.$APP_ID} running on http://localhost:${PORT} in ${process.env.$APP_REGION}`);
-        Infra.log(`Boot Complete ${process.env.$APP_ID}@${process.env.$APP_REGION}`,true);
+        console.log(`Boot Complete ${process.env.$APP_ID}@${process.env.$APP_REGION}:${process.env.$APP_ENV}`,true);
     });
 });

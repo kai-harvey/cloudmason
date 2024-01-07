@@ -9,7 +9,6 @@ const JWS = require('jws');
 const path = require('path');
 const fs = require('fs');
 
-const logLines = [];
 
 exports.setParams = async function(rootDir){
     console.log('Setting Params');
@@ -48,24 +47,6 @@ exports.setParams = async function(rootDir){
         process.env[key] = p.Value;
     });
     return true;
-}
-
-exports.log = async function(msg,dump){
-    if (process.env.$IS_LOCAL === 'y'){ console.log(msg);  return }
-    logLines.push(msg);
-    if (logLines.length < 10 && !dump){ return }
-    
-    const logText = logLines.join('\n');
-    const fileKey = `logs/run/${Date.now()}.txt`;
-    const s3Client = new S3Client({ region: process.env.$APP_REGION });
-    const poc = new PutObjectCommand({ 
-        Bucket: process.env.$APP_S3BUCKET, 
-        Key: fileKey, 
-        Body: logText 
-    });
-    const res = await s3Client.send(poc);
-    logLines.length = 0;
-    return res;
 }
 
 exports.verifyUser = async function(req,res,next){

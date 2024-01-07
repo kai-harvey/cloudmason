@@ -121,7 +121,7 @@ exports.checkAMIStatus = async function(image_id,region){
 
 }
 
-exports.getConsoleOutput = async function(autoScalingGroupName,region){
+exports.getConsoleOutput = async function(autoScalingGroupName,region,latest=true){
     const autoScalingClient = new AutoScalingClient({ region }); // specify your region
     const ec2Client = new EC2Client({ region });
 
@@ -138,7 +138,7 @@ exports.getConsoleOutput = async function(autoScalingGroupName,region){
         const consoleOutput = [];
         
         for (let i=0;i<instanceIds.length;i++){
-            const consoleOutputCommand = new GetConsoleOutputCommand({ InstanceId: instanceIds[i] });
+            const consoleOutputCommand = new GetConsoleOutputCommand({ InstanceId: instanceIds[i],Latest: latest });
             const outputResponse = await ec2Client.send(consoleOutputCommand);
             const output = outputResponse.Output ? Buffer.from(outputResponse.Output, "base64").toString("ascii") : '';
             consoleOutput.push({

@@ -6,6 +6,7 @@ const Common = require('./helpers/common');
 
 exports.main = async function(args){
     const logType = args.build === null ? 'build' : args.boot === null ? 'boot' : 'run';
+    const getLatest = args.boot === null ? false : true;
 
     console.log(`Inspecting ${args.app} instance ${args.domain} ${logType} logs`);
     // Get App
@@ -24,28 +25,16 @@ exports.main = async function(args){
         return
     }
 
-    if (logType === 'boot'){
-        const asgId = await CF.getStackResource('asg',instance.stackName,instance.region);
-        console.log("Auto Scaling Group ID:", asgId);
-        const consoleOutputs = await EC2.getConsoleOutput(asgId,instance.region);
-        console.log("================= BOOT LOGS =================");
-        consoleOutputs.forEach(output => {
-            console.log("---- EC2 ID:", output.instanceId, "----");
-            console.log( output.output );
-            console.log('======================= END =========================');
-        });
-    } else if (logType === 'run'){
-        console.log('====================  RUN LOGS   ====================');
-        const bucketName = await CF.getStackResource('s3',instance.stackName,instance.region);
-        const bucketLogs = await S3.readFiles(bucketName,`logs/run`,instance.region);
-        bucketLogs.forEach(log => {
-            const dateStamp = Common.formatDate(log.LastModified);
-            console.log(`---- ${dateStamp} ----`);
-            console.log(log.Content);
-            console.log('----             ----')
-        });
+ 
+    const asgId = await CF.getStackResource('asg',instance.stackName,instance.region);
+    console.log("Auto Scaling Group ID:", asgId);
+    const consoleOutputs = await EC2.getConsoleOutput(asgId,instance.region,getLatest);
+    console.log(`================= ${logType.toUpperCase()} LOGS =================`);
+    consoleOutputs.forEach(output => {
+        console.log("---- EC2 ID:", output.instanceId, "----");
+        console.log( output.output );
         console.log('======================= END =========================');
-    }
+    });
     return
 }
 
