@@ -4,66 +4,64 @@ The tool will handle everything from obtaining ACM certificates to building AMIs
 
 Can be used as a command line tool, or in a CI/CD pipeline.
 
+## Contents
+- [Quick Start](##quick-start)
+- [Important Notes](##important)
+- [Commands](##commands)
 
-# Quick Start
+
+
+## Quick Start
 
 Get an Ec2 nodejs app up and running in 4 commands.
 
-#### Step 1: Prereqs:
-
-1. Open an AWS account
-2. Download and set up the AWS CLI (or just set your AWS credentials with enviroment variables)
-3. Buy a domain to deploy apps to
-4. Run the following command to set up your org:
-   1. `init-org -name MyOrg -region us-east-1`
-
-#### Step 2: Set up an App
-
-Run the command below to get a starter nodejs template
-
-```
-mason starter -p ./myDesktop/HelloWorld -type asg
-```
-
-#### Step 3: Add an App
-
+1. **Prereqs**
+      1. Open an AWS account
+      2. Download and set up the AWS CLI (or just set your AWS credentials with enviroment variables)
+      3. Buy a domain to deploy apps to
+      4. Run the following command to set up your org: 
+         - `init-org -name MyOrg -region us-east-1`
+2. **Set up a Local App Template**
+      1. Get a sample nodejs app template: 
+         - `mason starter -p ./myDesktop/MyFirstApp -type asg`
+3. **Add an App**
 ```
 mason new-app -name MyFirstApp -type asg
-new-instance -app MyFirstApp -domain myfirstapp.com -region us-east-2 -admin me@gmail.com
-update-app -app MyFirstApp -v 1.0 -path ./myDesktop/HelloWorld
-list-apps
+mason new-instance -app MyFirstApp -domain myfirstapp.com -region us-east-2 -admin me@gmail.com
+mason update-app -app MyFirstApp -v 1.0 -path ./myDesktop/HelloWorld
+mason list-apps
 ```
-You now have an AMI and Cloudformation stack primed and ready to go. 
+4.  **Launch it**
+```
+mason launch -app MyFirstApp -v 1.0 -domain myfirstapp.com
+mason inspect -app MyFirstApp -domain myfirstapp.com -boot
+```
+5. **Review It**
+      1. Visit the domain you specified. You'll see a login page.
+      2. Check the email address you specified for a temp password. Use it to log in.
+      3. After logging in, you'll see a "Hello World" page.
 
-#### Step 4: Launch it
+#### All Together
 
 ```
-launch -app MyFirstApp -v 1.0 -domain myfirstapp.com
-inspect -app MyFirstApp -domain myfirstapp.com -boot
+init-org -name MyOrg -region us-east-1
+mason starter -p ./myDesktop/MyFirstApp -type asg
+mason new-app -name MyFirstApp -type asg
+mason new-instance -app MyFirstApp -domain myfirstapp.com -region us-east-2 -admin me@gmail.com
+mason update-app -app MyFirstApp -v 1.0 -path ./myDesktop/MyFirstApp
+mason launch -app MyFirstApp -v 1.0 -domain myfirstapp.com
+mason inspect -app MyFirstApp -domain myfirstapp.com -boot
 ```
 
-The `launch` command deploy the specified version of your application to the specified domain (instance). 
 
-It takes time to launch the app, so the `inspect` command will return the status of the cloudformation deployment. It will also return the console output from the boot script (aka User Data) when the first instance starts up.
-
-
-# IMPORTANT!!!
+## IMPORTANT!!!
 
 - THIS APP DEPLOYS EC2 INSTANCES THAT ARE NOT FREE! IT WILL RESULT IN AWS CHARGES!
 - Make sure to run `delete-instance` when you're done to avoid major surprises
+- update-app will build an AMI, which may not be immediately available. Leave a few minutes between running update-app and launch
 - Your web application must serve on localhost:8080
 - Use `inspect` ! It will return all console output of your application - very useful for debugging
 
-
-# Architectures
-
-### AMI-Based Autoscaling Group Web App
-
-To do
-
-### Cloudfront and S3 Static Site
-
-To do
 
 
 
@@ -84,10 +82,8 @@ Run `mason [command] -<options>`
 | [starter](###starter)                   | Get a starter template for a specified architecture type      |
 | [delete-instance](###delete-instance)   | Delete an instance                                  |
 | [delete-app](###delete-app)             | Delete an app                                       |
-| [update-stack](###update-stack)         | Update cloudformation stac                          |
+| [update-stack](###update-stack)         | Update cloudformation stack                          |
 | [list-apps](###list-apps)               | List all apps                                       |
-| [isvalid](###isvalid)                   | Check if a cloudformation template is valid         |
-| [zip](###zip)                           | Zip a folder                                        |
 
 
 
