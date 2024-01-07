@@ -4,6 +4,11 @@ The tool will handle everything from obtaining ACM certificates to building AMIs
 
 Can be used as a command line tool, or in a CI/CD pipeline.
 
+## Contents
+- [Quick Start](##quick-start)
+- [Important Notes](##important)
+- [Commands](##commands)
+
 
 
 ## Quick Start
@@ -49,7 +54,7 @@ mason inspect -app MyFirstApp -domain myfirstapp.com -boot
 ```
 
 
-### IMPORTANT!!!
+## IMPORTANT!!!
 
 - THIS APP DEPLOYS EC2 INSTANCES THAT ARE NOT FREE! IT WILL RESULT IN AWS CHARGES!
 - Make sure to run `delete-instance` when you're done to avoid major surprises
