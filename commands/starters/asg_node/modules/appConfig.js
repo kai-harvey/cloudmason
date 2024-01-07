@@ -19,7 +19,8 @@ exports.setParams = async function(rootDir){
     const configLines = configText.split(',');
     process.env.$APP_REGION = configLines[0].trim();
     process.env.$APP_ID = configLines[1].trim();
-    process.env.$IS_LOCAL = configLines[2] ? 'y' : '';  
+    process.env.$IS_LOCAL = configLines[2] ? 'y' : ''; 
+    process.env.$APP_ENV = configLines[2].trim() 
     console.log(`REGION: ${process.env.$APP_REGION} APP_ID: ${process.env.$APP_ID} LOCAL: ${process.env.$IS_LOCAL}`)
 
     // Get the parameters from SSM
@@ -69,7 +70,7 @@ exports.log = async function(msg,dump){
 
 exports.verifyUser = async function(req,res,next){
     // Return Mock User if Local
-    if (process.env.$IS_LOCAL == 'y') {
+    if (process.env.$APP_ENV == 'local') {
         res.locals.user = {
             ok: true,
             email: 'test@example.com',

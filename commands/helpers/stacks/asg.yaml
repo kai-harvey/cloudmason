@@ -33,6 +33,9 @@ Parameters:
   AppVersion:
     Type: String
     Description: Major.minor.build
+  InstanceEnvironment:
+    Type: String
+    Description: Instance enviroment (prod,dev). Setting prod will enable advanced security features.
   
 
 Resources:
@@ -186,14 +189,13 @@ Resources:
         IamInstanceProfile:
           Name:
             Ref: AppEc2Profile
-        # UserData: IyEvYmluL2Jhc2ggLXgKZWNobyAiUnVubmluZyB1c2VyIGRhdGEiCmNkIC9ob21lL2VjMi11c2VyL2FwcApjaG1vZCAreCBzdGFydC5zaApzb3VyY2Ugc3RhcnQuc2g=
         UserData:
           Fn::Base64: 
             !Sub |
               #!/bin/bash
               echo "Running user data"
               cd /home/ec2-user/app
-              echo "${AWS::Region},${AWS::StackName}" > mason.txt
+              echo "${AWS::Region},${AWS::StackName},${InstanceEnvironment}" > mason.txt
               chmod +x start.sh
               source start.sh
         ImageId: !Ref AmiId
@@ -415,3 +417,9 @@ Resources:
       Name: !Sub '/${AWS::StackName}/version'
       Type: 'String'
       Value: !Ref AppVersion
+  ParamEnvironment:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: !Sub '/${AWS::StackName}/env'
+      Type: 'String'
+      Value: !Ref InstanceEnvironment

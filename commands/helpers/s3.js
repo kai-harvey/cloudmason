@@ -1,4 +1,4 @@
-const { S3Client,PutObjectCommand,CopyObjectCommand,HeadObjectCommand,DeleteObjectsCommand,ListObjectsV2Command,GetObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client,PutObjectCommand,CopyObjectCommand,HeadObjectCommand,DeleteObjectsCommand,ListObjectsV2Command,GetObjectCommand,ListObjectVersionsCommand,DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const fs = require('fs');
 
 
@@ -68,6 +68,11 @@ exports.copyInfraFile = async function(srcKey,destKey){
     return true;
 }
 
+exports.emptyBucket = async function(bucketName,region){
+    await emptyS3Bucket(bucketName,region)
+    return true;
+}
+
 exports.deleteAppFolder = async function(appName){
     await deleteFolder(
         process.env.orgBucket,
@@ -134,6 +139,42 @@ async function deleteFolder(bucketName, prefix, region){
 
     // In case of pagination (more than 1000 objects), recursively handle the next batch
     if (listedObjects.IsTruncated) await deleteFolder(bucketName, prefix, region);
+}
+
+
+async function emptyS3Bucket(bucketName, region) {
+    const  s3Client= new S3Client({region});
+
+    // List all object versions
+    const listedObjectVersions = await s3Client.send(new ListObjectVersionsCommand({ Bucket: bucketName }));
+    if (listedObjectVersions.Versions || listedObjectVersions.DeleteMarkers) {
+        const objectsToDelete = [
+            ...listedObjectVersions.Versions.map(v => ({ Key: v.Key, VersionId: v.VersionId })),
+            ...listedObjectVersions.DeleteMarkers.map(dm => ({ Key: dm.Key, VersionId: dm.VersionId }))
+        ];
+
+        for (const object of objectsToDelete) {
+            await s3Client.send(new DeleteObjectCommand({
+                Bucket: bucketName,
+                Key: object.Key,
+                VersionId: object.VersionId
+            }));
+        }
+    }
+    
+    // List all objects
+    const listedObjects = await s3Client.send(new ListObjectsV2Command({ Bucket: bucketName }));
+    if (listedObjects.Contents.length === 0) return;
+
+    // Delete all objects
+    const deleteParams = {
+        Bucket: bucketName,
+        Delete: { Objects: listedObjects.Contents.map(({ Key }) => ({ Key })) }
+    };
+    await s3Client.send(new DeleteObjectsCommand(deleteParams));
+
+    // Recursively call the function if the bucket is not empty
+    if (listedObjects.IsTruncated) await emptyS3Bucket(bucketName);
 }
 
 async function streamToString(stream) {

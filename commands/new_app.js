@@ -13,13 +13,12 @@ exports.main = async function(args){
     }
 
     // Check Lang Selection
-    if (args.py && args.node){
-        console.log('Cannot set both nodejs and python. Select one.');
-        throw new Error('Invalid language selection')
+    if (args.node && !/[0-9]{1,2}/.test(args.node)){
+        throw new Error('Invalid nodejs version. Use major version only (14,15,16)')
     }
 
     // Prep Stack
-    const stackPath = path.resolve(__dirname, 'helpers', 'stacks', `${stackType}.yaml`);
+    const stackPath = path.resolve(__dirname, 'helpers', 'stacks', `${args.type}.yaml`);
     if (!fs.existsSync(stackPath)){ throw new Error('Invalid stack ' + args.type); }
 
     const stackText = fs.readFileSync(stackPath, 'utf-8')
