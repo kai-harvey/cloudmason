@@ -164,7 +164,7 @@ async function emptyS3Bucket(bucketName, region) {
     
     // List all objects
     const listedObjects = await s3Client.send(new ListObjectsV2Command({ Bucket: bucketName }));
-    if (listedObjects.Contents.length === 0) return;
+    if (!listedObjects.Contents || listedObjects.Contents.length === 0) return;
 
     // Delete all objects
     const deleteParams = {
