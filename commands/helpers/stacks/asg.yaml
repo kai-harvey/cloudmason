@@ -44,13 +44,9 @@ Resources:
     Type: 'AWS::CertificateManager::Certificate'
     Properties:
       DomainName: !Ref InstanceDomain
-      SubjectAlternativeNames:
-        - !Sub 'auth.${InstanceDomain}'
       ValidationMethod: DNS
       DomainValidationOptions:
         - DomainName: !Ref InstanceDomain
-          HostedZoneId: !Ref InstanceRootDomain
-        - DomainName: !Sub 'auth.${InstanceDomain}'
           HostedZoneId: !Ref InstanceRootDomain
 # ALB
   AppALB:
@@ -278,7 +274,6 @@ Resources:
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
-      # ClientName: MyUserPoolClient
       AllowedOAuthFlows: 
         - code
       AllowedOAuthScopes: 
@@ -287,23 +282,23 @@ Resources:
       UserPoolId: !Ref CognitoUserPool
       GenerateSecret: true
       CallbackURLs:
-        # - https://authcloudmason.auth.us-east-1.amazoncognito.com/oauth2/idpresponse
         - !Sub 'https://${InstanceDomain}/oauth2/idpresponse'
       SupportedIdentityProviders:
         - COGNITO
   CognitoIdentityPool:
     Type: AWS::Cognito::IdentityPool
     Properties:
-      # IdentityPoolName: IdentityPool
       AllowUnauthenticatedIdentities: false
       CognitoIdentityProviders:
         - ClientId: !Ref CognitoUserPoolClient
           ProviderName: !GetAtt CognitoUserPool.ProviderName
   CognitoUserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
+    DependsOn: AppALBRouteRecord
     Properties:
-      # Domain: !Sub '${AWS::StackName}'
-      Domain: !Sub 'meantto-auth'
+      Domain: !Sub
+        - 'auth-${StackId}'
+        - StackId: !Select [2, !Split ['/', !Ref AWS::StackId]]
       UserPoolId: !Ref CognitoUserPool
   CognitoUsrAdminGroup:
     Type: AWS::Cognito::UserPoolGroup
