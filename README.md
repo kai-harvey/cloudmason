@@ -339,35 +339,3 @@ mason starter -type asg -l node -path ../myfirstapp
 
 
 
-## TODO
-
-- [x] Run logs 
-- [x] Read token
-- [x] Verify token
-- [x] Get user groups
-- [x] DDB connect
-- [x] Fix starter routes
-- [x] Add arguments for max ec2 instance and instance type
-- [X] Customize boot script
-- [x] Secure param permissions
-- [X] Pass node/py versions
-- [X] Pass version info to instance
-- [X] Fix Delete App
-- [X] Update default instance
-- [X] Pass Env to instance
-- [] Custom SES Config
-- [X] Fix logs
-- [] Add dev
-- [] Add Admin
-- [] Cloudtrails
-- [] Static site
-- [] Deregistering in home region
-- [] cf-templates s3 bucket creation
-
-## OPEN ITEMS
-
-- Custom auth domain
-    - AWS requires ACM cert in us-east-1 for custom Cognito auth domain. Cloudformation does not allow for cross-region resource creation
-    - [Github AWS Issue](https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/523)
-
-
