@@ -14,6 +14,14 @@ const Commands = {
             {n: 'region', desc: 'AWS Region for Core Assets. Default us-east-1', r: false}
         ]
     },
+    'set-org': {
+        desc: "Set an exsiting organization",
+        exec: require('./commands/init_org').setOrg,
+        args: [
+            {n: 'name', desc: 'Unique org Name. Letters only', r: true, pattern: `[A-Za-z]{2,20}`},
+            {n: 'region', desc: 'AWS Region for Core Assets. Default us-east-1', r: false}
+        ]
+    },
     'new-app': {
         desc: 'Add a new application',
         exec: require('./commands/new_app').main,
