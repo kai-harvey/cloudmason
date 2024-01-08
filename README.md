@@ -9,6 +9,11 @@ Can be used as a command line tool, or in a CI/CD pipeline.
 - [Important Notes](##important)
 - [Commands](##commands)
 
+## Installation
+
+Be sure to use the -g flag to install globally.
+
+``npm install -g cloudmason``
 
 
 ## Quick Start
@@ -18,7 +23,7 @@ Get an Ec2 nodejs app up and running in 4 commands.
 1. **Prereqs**
       1. Open an AWS account
       2. Download and set up the AWS CLI (or just set your AWS credentials with enviroment variables)
-      3. Buy a domain to deploy apps to
+      3. Ensure you have a domain to deploy apps to
       4. Make sure you have nodejs version 18+ installed
       5. Install the cloudmason CLI
             - `npm install -g cloudmason`
