@@ -129,7 +129,7 @@ const Commands = {
 
 async function main(){
     const nodeVersion = checkNodeVersion();
-    
+
     const orgExists = await readOrgInfo();
     if (orgExists){
         console.log(`>>>> ${process.env.orgName} <<<<`);
@@ -189,14 +189,12 @@ async function main(){
 ////////////////////////////////
 
 function checkNodeVersion() {
-    const requiredVersion = 18;
+    const requiredVersion = 16;
     const currentVersion = process.version.split('.')[0].replace('v', '');
 
     if (parseInt(currentVersion) < requiredVersion) {
         throw new Error(`Node.js version is less than ${requiredVersion}. Current version: ${process.version}`);
     }
-
-    console.log('Node.js version is sufficient:', process.version);
 }
 
 async function readOrgInfo(){
