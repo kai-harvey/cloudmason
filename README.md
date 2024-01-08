@@ -19,11 +19,13 @@ Get an Ec2 nodejs app up and running in 4 commands.
       1. Open an AWS account
       2. Download and set up the AWS CLI (or just set your AWS credentials with enviroment variables)
       3. Buy a domain to deploy apps to
-      4. Run the following command to set up your org: 
-         - `init-org -name MyOrg -region us-east-1`
+      4. Install the cloudmason CLI
+            - `npm install -g cloudmason`
+      5. Run the following command to set up your org: 
+            - `mason init-org -name MyOrg -region us-east-1`
 2. **Set up a Local App Template**
       1. Get a sample nodejs app template: 
-         - `mason starter -p ./myDesktop/MyFirstApp -type asg`
+            - `mason starter -p ./myDesktop/MyFirstApp -type asg`
 3. **Add an App**
 ```
 mason new-app -name MyFirstApp -type asg
@@ -31,12 +33,12 @@ mason new-instance -app MyFirstApp -domain myfirstapp.com -region us-east-2 -adm
 mason update-app -app MyFirstApp -v 1.0 -path ./myDesktop/HelloWorld
 mason list-apps
 ```
-4.  **Launch it**
+1.  **Launch it**
 ```
 mason launch -app MyFirstApp -v 1.0 -domain myfirstapp.com
 mason inspect -app MyFirstApp -domain myfirstapp.com -boot
 ```
-5. **Review It**
+1. **Review It**
       1. Visit the domain you specified. You'll see a login page.
       2. Check the email address you specified for a temp password. Use it to log in.
       3. After logging in, you'll see a "Hello World" page.
@@ -44,6 +46,7 @@ mason inspect -app MyFirstApp -domain myfirstapp.com -boot
 #### All Together
 
 ```
+npm install -g cloudmason
 init-org -name MyOrg -region us-east-1
 mason starter -p ./myDesktop/MyFirstApp -type asg
 mason new-app -name MyFirstApp -type asg
