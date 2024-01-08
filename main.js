@@ -150,7 +150,7 @@ async function main(){
         return;
     }
     // Exit if no org found
-    if (args.cmd !== 'init-org' && args.cmd !== 'set-org' && !orgExists){
+    if (args.cmd !== 'init-org' && args.cmd !== 'set-org' && args.cmd !== 'starter' && !orgExists){
         console.log(`No organization found. Use init-org or set-org`);
     }
 
