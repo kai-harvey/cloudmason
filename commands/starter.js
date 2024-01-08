@@ -9,7 +9,9 @@ exports.main = function(args){
     
     // Resolve Output Path
     const outputPath = path.resolve(args.p);
-    const starterPath = `./commands/starters/${args.type}${args.l ? `_${args.l}` : ''}`;
+    const starterRelPath = `starters/${args.type}${args.l ? `_${args.l}` : ''}`;
+    const starterPath = path.join(__dirname, starterRelPath);
+
 
     // Copy Directory
     console.log(`Creating dir ${outputPath}`);
