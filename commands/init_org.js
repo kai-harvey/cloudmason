@@ -28,20 +28,19 @@ exports.main = async function(args){
     return true;
 }
 
+exports.setOrg = async function(args){
+    // Set org.txt
+    const orgPath = path.resolve(__dirname,'..','org.txt');
+    const orgData = `${args.name},${args.region}`;
+    fs.writeFileSync(orgPath,orgData,'utf-8')
+    console.log('Set org:',orgData)
+    return true;
+}
+
 
 /////////////////////////////////////////
 ////////////// FUNCS ////////////////////
 ////////////////////////////////////////
-
-async function bucketExists(bucketName,region){
-    const client = new S3Client({region});
-    try {
-        await client.send(new HeadBucketCommand({ Bucket: bucketName }));
-        return true;
-    } catch (e){
-        return false;
-    }
-}
 
 async function getDefaultVPC(region){
     const ec2Client = new EC2Client({ region }); 
