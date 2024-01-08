@@ -19,9 +19,10 @@ Get an Ec2 nodejs app up and running in 4 commands.
       1. Open an AWS account
       2. Download and set up the AWS CLI (or just set your AWS credentials with enviroment variables)
       3. Buy a domain to deploy apps to
-      4. Install the cloudmason CLI
+      4. Make sure you have nodejs version 18+ installed
+      5. Install the cloudmason CLI
             - `npm install -g cloudmason`
-      5. Run the following command to set up your org: 
+      6. Run the following command to set up your org: 
             - `mason init-org -name MyOrg -region us-east-1`
 2. **Set up a Local App Template**
       1. Get a sample nodejs app template: 
