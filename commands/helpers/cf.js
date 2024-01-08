@@ -32,7 +32,6 @@ exports.deployOrgStack = async function(region,params){
         return result.StackId;
     } catch (e){
         if (/AlreadyExistsException/.test(e)){
-            console.log('Stack exists ' + stackName);
             return false;
         } else {
             throw new Error(e.message)
