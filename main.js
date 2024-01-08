@@ -152,6 +152,7 @@ async function main(){
     // Exit if no org found
     if (args.cmd !== 'init-org' && args.cmd !== 'set-org' && args.cmd !== 'starter' && !orgExists){
         console.log(`No organization found. Use init-org or set-org`);
+        return
     }
 
     // Check for valid command
@@ -176,9 +177,6 @@ async function main(){
         args.args.region = process.env.orgRegion = args.args.region || 'us-east-1';
         process.env.orgName = args.args.name;
         process.env.orgId = args.args.domain;
-    } else if (!orgExists){
-        console.log('Run init-org or set-org first');
-        return
     }
 
     // Exec Command
