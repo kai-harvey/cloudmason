@@ -31,7 +31,7 @@ Get an Ec2 nodejs app up and running in 4 commands.
             - `mason init-org -name MyOrg -region us-east-1`
 2. **Set up a Local App Template**
       1. Get a sample nodejs app template: 
-            - `mason starter -p ./myDesktop/MyFirstApp -type asg`
+            - `mason starter -p ./myDesktop/MyFirstApp -type asg -l node`
 3. **Add an App**
 ```
 mason new-app -name MyFirstApp -type asg
@@ -53,8 +53,8 @@ mason inspect -app MyFirstApp -domain myfirstapp.com -boot
 
 ```
 npm install -g cloudmason
-init-org -name MyOrg -region us-east-1
-mason starter -p ./myDesktop/MyFirstApp -type asg
+mason init-org -name MyOrg -region us-east-1
+mason starter -p ./myDesktop/MyFirstApp -type asg -l node
 mason new-app -name MyFirstApp -type asg
 mason new-instance -app MyFirstApp -domain myfirstapp.com -region us-east-2 -admin me@gmail.com
 mason update-app -app MyFirstApp -v 1.0 -path ./myDesktop/MyFirstApp
