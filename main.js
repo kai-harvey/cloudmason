@@ -236,10 +236,12 @@ function parseArgs(){
 function printAllInfo(){
     Object.entries(Commands).forEach((c)=>{   
         console.log(`| ${c[0]} ${c[1].desc}`)
-        c[1].args.forEach(a=>{
-            const argName = a.r ? `${a.n}*` : a.n;
-            console.log(`\t-${argName}: ${a.desc}`)
-        })
+        if (c[1].args){
+            c[1].args.forEach(a=>{
+                const argName = a.r ? `${a.n}*` : a.n;
+                console.log(`\t-${argName}: ${a.desc}`)
+            })
+        }
         console.log('-------\n');
     })
     console.log('\n*required')
