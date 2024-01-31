@@ -412,9 +412,3 @@ Resources:
       Name: !Sub '/${AWS::StackName}/version'
       Type: 'String'
       Value: !Ref AppVersion
-  ParamEnvironment:
-    Type: 'AWS::SSM::Parameter'
-    Properties:
-      Name: !Sub '/${AWS::StackName}/env'
-      Type: 'String'
-      Value: !Ref InstanceEnvironment
