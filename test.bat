@@ -1,5 +1,5 @@
 @REM node main.js init-org -name orgTheorem -region us-west-2
-@REM node main.js list-apps
+node main.js list-apps
 @REM node main.js new-app -name ot -type asg
 @REM node main.js new-instance -app ot -domain local.elmnts.xyz -region us-west-2 -admin kkh@kkh.io -env local
 @REM node main.js update-app -app ot -v 1.0 -path ./commands/starters/asg_node
