@@ -19,3 +19,4 @@ pckg.version = version;
 console.log(`Version: ${version}`);
 
 fs.writeFileSync('./package.json', JSON.stringify(pckg));
+
