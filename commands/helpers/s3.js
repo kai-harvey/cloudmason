@@ -57,7 +57,7 @@ exports.infraFileExists = async function(fileKey){
 }
 
 
-exports.copyInfraFile = async function(srcKey,destKey){
+exports.copyInfraFile = async function(fileKey){
     const client = new S3Client({ region: process.env.orgRegion });
     const params = {
         Bucket: process.env.orgBucket,
@@ -66,6 +66,27 @@ exports.copyInfraFile = async function(srcKey,destKey){
     };
     await client.send(new CopyObjectCommand(params));
     return true;
+}
+
+exports.getInfraFile = async function(fileKey,destKey){
+    const client = new S3Client({ region: process.env.orgRegion });
+    const params = {
+        Bucket: process.env.orgBucket,
+        Key: fileKey.toLowerCase(),
+    };
+    const command = new GetObjectCommand(params);
+    const response = await client.send(command);
+
+    const streamToString = (stream) =>
+      new Promise((resolve, reject) => {
+        const chunks = [];
+        stream.on("data", (chunk) => chunks.push(chunk));
+        stream.on("error", reject);
+        stream.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
+      });
+
+    const fileContent = await streamToString(response.Body);
+    return fileContent;
 }
 
 exports.emptyBucket = async function(bucketName,region){
