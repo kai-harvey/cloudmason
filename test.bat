@@ -5,7 +5,7 @@
 @REM node main.js update-app -app theorim -v 1.0 -path ../../../../desktop/theorim/repos/theorim/src
 @REM node main.js get-stack -app theorim -v 1.0 -out ../../../../desktop/theorim/repos/theorim
 @REM node main.js update-stack -app theorim -v 1.0 -stack ../../../../desktop/theorim/repos/theorim/stack.yaml
-node main.js launch -app theorim -v 1.0 -domain dev.elmnts.xyz
+@REM node main.js launch -app theorim -v 1.0 -domain dev.elmnts.xyz
 @REM node main.js inspect -app ot -domain local.elmnts.xyz -run
 @REM node main.js isvalid -p ./commands/helpers/stacks/asg.yaml
 
