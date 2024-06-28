@@ -224,11 +224,16 @@ Resources:
           AttributeType: S
         - AttributeName: sk
           AttributeType: S
+        - AttributeName: _ttl
+          AttributeType: N
       KeySchema:
         - AttributeName: pk
           KeyType: HASH
         - AttributeName: sk
           KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: "_ttl"
+        Enabled: true
 # S3 App Bucket
   AppBucket:
     Type: AWS::S3::Bucket
