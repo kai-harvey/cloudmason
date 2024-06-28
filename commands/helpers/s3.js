@@ -57,7 +57,7 @@ exports.infraFileExists = async function(fileKey){
 }
 
 
-exports.copyInfraFile = async function(fileKey){
+exports.copyInfraFile = async function(srcKey,destKey){
     const client = new S3Client({ region: process.env.orgRegion });
     const params = {
         Bucket: process.env.orgBucket,
@@ -68,7 +68,7 @@ exports.copyInfraFile = async function(fileKey){
     return true;
 }
 
-exports.getInfraFile = async function(fileKey,destKey){
+exports.getInfraFile = async function(fileKey){
     const client = new S3Client({ region: process.env.orgRegion });
     const params = {
         Bucket: process.env.orgBucket,

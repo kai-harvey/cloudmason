@@ -66,6 +66,16 @@ const Commands = {
             {n: 'stack', desc: 'Path to updated JSON or YML stack', r: false}
         ]
     },
+    'get-stack': {
+        desc: 'Get stack',
+        exec: require('./commands/get_stack').main,
+        args: [
+            {n: 'app', desc: 'Name of existing app', pattern: `[A-Za-z]{2,20}`, r: true},
+            {n: 'v', desc: 'Version to update', pattern: `[0-9]{1,20}`, r: false},
+            {n: 'default', desc: 'Update default version', r: false},
+            {n: 'out', desc: 'Path to output stack file', r: true}
+        ]
+    },
     'launch': {
         desc: 'Launch application version to an instance',
         exec: require('./commands/launch_app').main,

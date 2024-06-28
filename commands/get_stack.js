@@ -18,6 +18,7 @@ exports.main = async function(args){
         console.log('Err: Cannot set default and specify version');
         throw new Error('Err: Cannot set default version and specify version')
     }
+    console.log(args)
     const outputPath = path.resolve(args.out);
     if (!fs.statSync(outputPath).isDirectory()){ throw new Error("Invalid Output Path:" + args.out)}
 
