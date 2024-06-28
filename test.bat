@@ -1,4 +1,5 @@
 @REM node main.js init-org -name Theorim -region us-east-1 -repo "Theorim-ai/theorim"
+node main.js update-org -name Theorim -region us-east-1 -repo "Theorim-ai/theorim"
 @REM node main.js list-apps
 @REM node main.js new-app -name theorim -type asg
 @REM node main.js new-instance -app theorim -domain dev.elmnts.xyz -region us-east-1 -admin admin@theorim.ai -env local
