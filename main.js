@@ -11,7 +11,8 @@ const Commands = {
         exec: require('./commands/init_org').main,
         args: [
             {n: 'name', desc: 'Unique org Name. Letters only', r: true, pattern: `[A-Za-z]{2,20}`},
-            {n: 'region', desc: 'AWS Region for Core Assets. Default us-east-1', r: false}
+            {n: 'region', desc: 'AWS Region for Core Assets. Default us-east-1', r: false},
+            {n: 'repo', desc: 'Github repo name', r: false}
         ]
     },
     'set-org': {
@@ -63,6 +64,16 @@ const Commands = {
             {n: 'v', desc: 'Version to update', pattern: `[0-9]{1,20}`, r: false},
             {n: 'default', desc: 'Update default version', r: false},
             {n: 'stack', desc: 'Path to updated JSON or YML stack', r: false}
+        ]
+    },
+    'get-stack': {
+        desc: 'Get stack',
+        exec: require('./commands/get_stack').main,
+        args: [
+            {n: 'app', desc: 'Name of existing app', pattern: `[A-Za-z]{2,20}`, r: true},
+            {n: 'v', desc: 'Version to update', pattern: `[0-9]{1,20}`, r: false},
+            {n: 'default', desc: 'Update default version', r: false},
+            {n: 'out', desc: 'Path to output stack file', r: true}
         ]
     },
     'launch': {

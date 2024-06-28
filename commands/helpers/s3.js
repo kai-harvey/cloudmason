@@ -68,6 +68,27 @@ exports.copyInfraFile = async function(srcKey,destKey){
     return true;
 }
 
+exports.getInfraFile = async function(fileKey){
+    const client = new S3Client({ region: process.env.orgRegion });
+    const params = {
+        Bucket: process.env.orgBucket,
+        Key: fileKey.toLowerCase(),
+    };
+    const command = new GetObjectCommand(params);
+    const response = await client.send(command);
+
+    const streamToString = (stream) =>
+      new Promise((resolve, reject) => {
+        const chunks = [];
+        stream.on("data", (chunk) => chunks.push(chunk));
+        stream.on("error", reject);
+        stream.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
+      });
+
+    const fileContent = await streamToString(response.Body);
+    return fileContent;
+}
+
 exports.emptyBucket = async function(bucketName,region){
     await emptyS3Bucket(bucketName,region)
     return true;

@@ -29,7 +29,8 @@ exports.main = async function(args){
 
     // --- I PREP ZIP ---
     const zipPath = path.resolve(args.path);
-    if (!fs.existsSync(zipPath)){ throw new Error("Path not found:" + args.path)}
+    if (!fs.existsSync(zipPath)){ throw new Error("Path not found:" + zipPath)}
+  
     const zipFilePath = await prepZip(zipPath);
     await S3.uploadInfraFile(`apps/${args.app}/${args.v}/app.zip`,zipFilePath);
 
@@ -174,7 +175,7 @@ async function waitUntilInstanceReady(instance_id,region){
     let totalSleepTime = 0;
     let ok = false;
     const command = new DescribeInstanceStatusCommand(input);
-    for (let i=0; i<50; i++){
+    for (let i=0; i<100; i++){
         const response = await client.send(command);
         const status = response.InstanceStatuses[0].InstanceStatus.Status;
         console.log(`\tCheck ${i+1} @ ${totalSleepTime}s: EC2 Status is ${status}`)
