@@ -22,7 +22,7 @@ exports.deployOrgStack = async function(region,params){
         StackName: `CoreInfra`,
         TemplateBody: stackYML,
         Capabilities: [
-            "CAPABILITY_IAM" || "CAPABILITY_NAMED_IAM" || "CAPABILITY_AUTO_EXPAND",
+            "CAPABILITY_IAM", "CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND",
         ],
         Parameters: cfParams,
         Tags: [{ Key: 'purpose', Value: 'infra' }]

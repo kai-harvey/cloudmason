@@ -7,14 +7,14 @@ const CF = require('./helpers/cf');
 
 
 exports.main = async function(args){
-    console.log(`Setting up ${args.name}@ in ${args.region}`)
+    console.log(`Setting up ${args.name}@ in ${args.region} with repo ${args.repo}`)
 
     // Get VPC ID
     const VpcId = await getDefaultVPC(args.region);
     console.log(`Default VPC: ${VpcId}`);
     
     // Deploy Stack
-    const success = await CF.deployOrgStack(args.region, {orgName: args.name, VpcId: VpcId})
+    const success = await CF.deployOrgStack(args.region, {orgName: args.name, VpcId: VpcId, GitHubRepoName: args.repo})
     if (success === false){
         console.log('ERR: Org already exists. Only one org permitted per account');
         throw new Error('Org already exists')

@@ -33,7 +33,7 @@ exports.main = async function(args){
     // I.I WAIT FOR AMI TO BE AVAILABLE
     console.log(`Waiting for AMI ${targetAMI} to be available`);
     let isAvailable = false;
-    for (let i = 0; i < 24; i++){
+    for (let i = 0; i < 40; i++){
         const status = await EC2.checkAMIStatus(targetAMI,targetRegion);
         if (status === true){
             console.log(`AMI ${targetAMI} available after ${i*30}s`);
@@ -43,7 +43,7 @@ exports.main = async function(args){
         console.log(`\tAMI Status Check ${i} @${i*30}s : Not Available`);
         await Common.sleep(30);
     }
-    if (!isAvailable){ throw new Error(`AMI not available after 14 minutes. Try again in a few minutes.`) }
+    if (!isAvailable){ throw new Error(`AMI not available after 20 minutes. Try again in a few minutes.`) }
 
     // --- II DEPLOY CF STACK ---
     // Get Stack URL

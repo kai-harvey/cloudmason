@@ -229,6 +229,9 @@ Resources:
           KeyType: HASH
         - AttributeName: sk
           KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: "_ttl"
+        Enabled: true
 # S3 App Bucket
   AppBucket:
     Type: AWS::S3::Bucket
