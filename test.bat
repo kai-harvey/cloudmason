@@ -1,11 +1,13 @@
 @REM node main.js init-org -name Theorim -region us-east-1 -repo "Theorim-ai/theorim"
+@REM node main.js set-org -name Theorim -region us-east-1
+@REM node main.js update-org -name Theorim -region us-east-1 -repo "Theorim-ai/theorim"
 @REM node main.js list-apps
 @REM node main.js new-app -name theorim -type asg
 @REM node main.js new-instance -app theorim -domain dev.elmnts.xyz -region us-east-1 -admin admin@theorim.ai -env local
-@REM node main.js update-app -app theorim -v 1.0 -path ../../../../desktop/theorim/repos/theorim/src
+@REM node main.js update-app -app theorim -v 1.1 -path ../../../../desktop/theorim/repos/theorim/src -stack ../../../../desktop/theorim/repos/theorim/stack.yaml
 @REM node main.js get-stack -app theorim -v 1.0 -out ../../../../desktop/theorim/repos/theorim
 @REM node main.js update-stack -app theorim -v 1.0 -stack ../../../../desktop/theorim/repos/theorim/stack.yaml
-@REM node main.js launch -app theorim -v 1.0 -domain dev.elmnts.xyz
+node main.js launch -app theorim -v 1.1 -domain dev.theorim.xyz
 @REM node main.js inspect -app ot -domain local.elmnts.xyz -run
 @REM node main.js isvalid -p ./commands/helpers/stacks/asg.yaml
 

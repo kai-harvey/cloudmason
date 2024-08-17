@@ -117,6 +117,8 @@ Resources:
             Action: "sts:AssumeRoleWithWebIdentity"
             Condition:
               StringEquals:
+                "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+              StringLike:
                 "token.actions.githubusercontent.com:sub": !Sub "repo:${GitHubRepoName}:*"
       Policies:
         - PolicyName: "GitHubActionsPolicy"
@@ -126,8 +128,11 @@ Resources:
               - Effect: "Allow"
                 Action: "*"
                 Resource: "*"
-
-Outputs:
-  GithubRoleArn:
-    Description: "ARN of the GitHub Actions IAM Role"
-    Value: !GetAtt GitHubActionsRole.Arn
+  GitHubOidcProvider:
+    Type: 'AWS::IAM::OIDCProvider'
+    Properties:
+      Url: 'https://token.actions.githubusercontent.com'
+      ClientIdList:
+        - 'sts.amazonaws.com'
+      ThumbprintList:
+        - '6938fd4d98bab03faadb97b34396831e3780aea1'

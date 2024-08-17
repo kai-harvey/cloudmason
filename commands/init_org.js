@@ -28,6 +28,25 @@ exports.main = async function(args){
     return true;
 }
 
+exports.updateOrgStack = async function(args){
+    console.log(`Updating ${args.name}@ in ${args.region} with repo ${args.repo}`)
+
+    // Get VPC ID
+    const VpcId = await getDefaultVPC(args.region);
+    console.log(`Default VPC: ${VpcId}`);
+    
+    // Deploy Stack
+    const success = await CF.updateOrgStack(args.region, {orgName: args.name, VpcId: VpcId, GitHubRepoName: args.repo})
+    if (success === false){
+        console.log('ERR:', success);
+        throw new Error('Unknown error updating org stack')
+    }
+
+    // Set org.txt
+    console.log('Updated org')
+    return true;
+}
+
 exports.setOrg = async function(args){
     // Set org.txt
     const orgPath = path.resolve(__dirname,'..','org.txt');

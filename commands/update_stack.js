@@ -10,10 +10,10 @@ exports.main = async function(args){
         console.log('Err: No app named ' + args.app);
         throw new Error('Err: No app named ' + args.app)
     }
-    if (args.default ===  undefined && !app.versions[args.v]){
-        console.log('Err: No app version ' + args.app + ' ' + args.v);
-        throw new Error('Err: No app version ' + args.app + ' ' + args.v)
-    }
+    // if (args.default ===  undefined && !app.versions[args.v]){
+    //     console.log('Err: No app version ' + args.app + ' ' + args.v);
+    //     throw new Error('Err: No app version ' + args.app + ' ' + args.v)
+    // }
     if (args.default === null && args.v){
         console.log('Err: Cannot set default and specify version');
         throw new Error('Err: Cannot set default version and specify version')
