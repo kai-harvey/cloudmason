@@ -37,11 +37,18 @@ exports.main = async function(args){
     // --- II UPDATE STACK ---
     // If stack arg, upload stack
     const stackKey = `apps/${args.app}/${args.v}/stack.yaml`;
-    // If no stack arg, upload default stack if none exists
-    const stackExists = await S3.infraFileExists(stackKey)
-    if (!stackExists){
-        console.log('Copying default stack to ' +  `apps/${args.app}/${args.v}`);
-        await S3.copyInfraFile(app.stackKey,stackKey)
+    if (args.stack){
+        console.log('Updating Stack');
+        const stackPath = path.resolve(args.stack);
+        if (!fs.existsSync(stackPath)){ throw new Error("Stack not found:" + stackPath)}
+        await S3.uploadInfraFile(stackKey,stackPath);
+    } else {   
+        // If no stack arg, upload default stack if none exists
+        const stackExists = await S3.infraFileExists(stackKey)
+        if (!stackExists){
+            console.log('Copying default stack to ' +  `apps/${args.app}/${args.v}`);
+            await S3.copyInfraFile(app.stackKey,stackKey)
+        }
     }
 
     // --- III BUILD IMAGE ---
