@@ -1,4 +1,7 @@
-const { MarketplaceCatalogClient, StartChangeSetCommand,DescribeChangeSetCommand } = require("@aws-sdk/client-marketplace-catalog");
+const { MarketplaceCatalogClient, StartChangeSetCommand,DescribeChangeSetCommand, DescribeEntityCommand} = require("@aws-sdk/client-marketplace-catalog");
+const { EC2Client, DescribeImagesCommand } = require("@aws-sdk/client-ec2");
+const fs = require('fs');
+const path = require('path');
 const Params = require('./helpers/params');
 
 exports.add_listing = async function(args){
@@ -28,79 +31,32 @@ exports.main = async function(args){
     console.log('----------')
     
     // -- Publish AMI to Marketplace
-    await updateAmiVersion(pubArgs);
+    // await updateAmiVersion(pubArgs);
 
     // -- Get Marketplace AMI IDs
-
+    // AmiAlias: '/aws/service/marketplace/prod-shmtmk4gqrfge/1.2'
+    const amiAlias = `/aws/service/marketplace/${pubArgs.productId}/${pubArgs.version}`;
+    let stackTxt = fs.readFileSync(path.resolve(args.stack),'utf8');
+    stackTxt = stackTxt.replace(`ImageId: !Ref AmiId`,`ImageId: resolve:ssm:${amiAlias}`);
+//     console.log('Stack:',stackTxt);
+//     const paramBlock = (
+// `AmiId:
+//   Type: AWS::EC2::Image::Id
+//   Description: Max number of Ec2 instances\n`
+//   );
+//     stackTxt = stackTxt.replace(paramBlock,'');
     // -- Update CF Template with AMI IDs
-
+    const newFileName = path.join(path.dirname(args.stack), path.basename(args.stack).replace('.yaml',`-mkt.yaml`));
+    console.log('Updating Template:',newFileName);
+    fs.writeFileSync(newFileName,stackTxt);
     // -- Publish CFT
-
+    return true
 }
 
 
 
-//  * Publishes an AMI to AWS Marketplace.
-//  * @param {string} region - AWS region.
-//  * @param {string} productId - The AWS Marketplace product ID.
-//  * @param {string} amiId - The AMI ID to publish.
-//  * @param {string} version - Version string for the AMI.
-//  * @param {string} changeDescription - Description of the change.
-//  * @returns {Promise<void>} - Resolves when the operation completes.
 
-// async function publishAmi({region, productId, amiId, version, changeDescription}) {
-//   const client = new MarketplaceCatalogClient({ region });
-
-//   const changeSet = [
-//     {
-//       ChangeType: "AddDeliveryOptions",
-//       Entity: {
-//         Type: "AmiProduct@1.0",
-//         Identifier: amiId,
-//       },
-//       Details: JSON.stringify({
-//         ProductId: productId,
-//         DeliveryOptionDetails: [
-//           {
-//             DeliveryOptionId: "ami-delivery",
-//             DeliveryOptionType: "AMI",
-//             AmiDelivery: {
-//               AmiId: amiId,
-//             },
-//           },
-//         ],
-//       }),
-//     },
-//     {
-//       ChangeType: "AddVersion",
-//       Entity: {
-//         Type: "AmiProduct@1.0",
-//         Identifier: amiId,
-//       },
-//       Details: JSON.stringify({
-//         VersionTitle: version,
-//         ProductId: productId,
-//       }),
-//     },
-//   ];
-
-//   const command = new StartChangeSetCommand({
-//     Catalog: "AWSMarketplace",
-//     ChangeSet: changeSet,
-//     ChangeSetName: `Publish-${amiId}`,
-//     ChangeSetDescription: changeDescription,
-//   });
-
-//   try {
-//     const response = await client.send(command);
-//     console.log("Change set created:", response);
-//   } catch (error) {
-//     console.error("Error creating change set:", error);
-//     throw error;
-//   }
-// }
-
-
+// Update AMI Function
 
 const updateAmiVersion = async ({productId, amiId, version, changeDescription}) => {
     const client = new MarketplaceCatalogClient({ region: process.env.orgRegion }); // Update the region if needed
@@ -192,7 +148,57 @@ const updateAmiVersion = async ({productId, amiId, version, changeDescription}) 
     } catch (error) {
       console.error("Error updating AMI version:", error);
     }
-  };
+};
+
+
+
+// Get AMI Ids Function
+const getRegions = async (productId) => {
+  const client = new MarketplaceCatalogClient({ region: process.env.orgRegion }); // Update region if needed
+
+
+    const command = new DescribeEntityCommand({
+      Catalog: "AWSMarketplace",
+      EntityId: productId,
+    });
+    const response = await client.send(command);
+    console.log('dd',response.DetailsDocument);
+    console.log('v',response.DetailsDocument.Versions[1].DeliveryOptions[0].AmiAlias);
+    return response.DetailsDocument.RegionAvailability.Regions;
+    // console.log("Regions:", response.DetailsDocument.Description.RegionAvailability.Regions);
+    // console.log("Version:", response.DetailsDocument.Description.RegionAvailability.Regions);
+    // Extract AMI details by region
+}
+
+// List by Mktplc Listing
+const getAMIs = async (region,productName,productCode) => {
+    const ec2Client = new EC2Client({ region });
+
+    try {
+        const command = new DescribeImagesCommand({
+            Filters: [
+                {
+                    Name: "name",
+                    Values: [
+                        `${productName}-*-${productCode}` // Adjust the filter to match your product naming pattern
+                    ]
+                }
+            ]
+        });
+
+        const response = await ec2Client.send(command);
+
+        console.log(`Found ${response.Images.length} AMIs for product: ${productName} in region: ${region}`);
+        for (const ami of response.Images) {
+            console.log('ami',ami);
+        }
+
+        return response.Images;
+    } catch (error) {
+        console.error(`Error fetching AMIs for product: ${productName} in region: ${region}`, error);
+        throw error;
+    }
+}
 
 
 
