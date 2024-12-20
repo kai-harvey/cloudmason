@@ -105,6 +105,17 @@ exports.updateAppV = async function(appName,version,vParams){
 }
 
 // INSTANCE PARAMS
+exports.addPid = async function(appName,productId){
+    if (!process.env.orgRegion){ throw new Error('Region not set') }
+    const appKey = `/infra/apps/${appName.toLowerCase()}`
+    const appStr = await readParam(appKey,process.env.orgRegion);
+    const app = JSON.parse(appStr);
+
+    app.pid = productId;
+    await writeParam(appKey,JSON.stringify(app),process.env.orgRegion);
+}
+
+
 exports.addInstance = async function(appName,instanceName,params){
     if (!process.env.orgRegion){ throw new Error('Region not set') }
     const appKey = `/infra/apps/${appName.toLowerCase()}`

@@ -94,6 +94,23 @@ const Commands = {
             {n: 'v', desc: 'Version to launch', pattern: `[0-9]{1,20}`, r: true}
         ]
     },
+    'new-listing': {
+        desc: 'Set a new listing for an app',
+        exec: require('./commands/publish').add_listing,
+        args: [
+            {n: 'app', desc: 'Name of existing app', pattern: `[A-Za-z]{2,20}`, r: true},
+            {n: 'pid', desc: 'Product Id', r: true}
+        ]
+    },
+    'publish': {
+        desc: 'Publish app to marketplace',
+        exec: require('./commands/publish').main,
+        args: [
+            {n: 'app', desc: 'Name of existing app', pattern: `[A-Za-z]{2,20}`, r: true},
+            {n: 'desc', desc: 'Description of Changes', r: true},
+            {n: 'v', desc: 'Version to launch', pattern: `[0-9]{1,20}`, r: true}
+        ]
+    },
     'inspect': {
         desc: 'Get stack status and Ec2 console logs for an instance',
         exec: require('./commands/inspect').main,
