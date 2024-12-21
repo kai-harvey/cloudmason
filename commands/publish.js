@@ -41,7 +41,7 @@ exports.main = async function(args){
     stackTxt = stackTxt.replace(/^#-Strip.+#-Strip/ms,'');
 
     // -- Update CF Template with AMI IDs
-    const newFileName = path.join(path.dirname(args.stack), path.basename(args.stack).replace('.yaml',`-mkt.yaml`));
+    const newFileName = path.resolve(args.out);
     console.log('Updating Template:',newFileName);
     fs.writeFileSync(newFileName,stackTxt);
     return true

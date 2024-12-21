@@ -108,7 +108,9 @@ const Commands = {
         args: [
             {n: 'app', desc: 'Name of existing app', pattern: `[A-Za-z]{2,20}`, r: true},
             {n: 'desc', desc: 'Description of Changes', r: true},
-            {n: 'v', desc: 'Version to launch', pattern: `[0-9]{1,20}`, r: true}
+            {n: 'v', desc: 'Version to launch', pattern: `[0-9]{1,20}`, r: true},
+            {n: 'stack', desc: 'Path of stack.yaml', r: true},
+            {n: 'out', desc: 'Output path of marketplace stack', r: true}
         ]
     },
     'inspect': {
