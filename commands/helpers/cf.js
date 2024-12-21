@@ -61,11 +61,10 @@ exports.deployS3Stack = async function(stackName,s3Url,params,tag,region){
     return result.StackId;
 }
 
-exports.updateOrgStack = async function(region,params){
+exports.updateOrgStack = async function(yamlPath){
     const client = new CloudFormationClient({ region });
-    const cfParams = Object.keys(params).map(k=>{ return { ParameterKey: k, ParameterValue: params[k] } })
     
-    const stackPath = path.resolve(__dirname,'stacks',`infra.yaml`);
+    const stackPath = path.resolve(yamlPath);
     if (!fs.existsSync(stackPath)){
         console.log('Infra Stack not found');
         throw { message: 'Infra stack not found', at: 'deployStack'}
@@ -75,7 +74,6 @@ exports.updateOrgStack = async function(region,params){
     const cmd = {
         StackName: 'CoreInfra',
         TemplateBody: stackYML,
-        Parameters: cfParams,
         Capabilities: ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"]
     };
     const command = new UpdateStackCommand(cmd);

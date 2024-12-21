@@ -5,12 +5,15 @@ Parameters:
   orgName:
     Type: String
     Description: Unique name of organization
+    Default: '{{resolve:ssm:infra/orgName}}'
   VpcId:
     Type: String
     Description: Org VPC
+    Default: '{{resolve:ssm:infra/VpcId}}'
   GitHubRepoName:
     Type: String
     Description: "GitHub repository name in the format owner/repo"
+    Default: '{{resolve:ssm:infra/GitHubRepoName}}'
   
 
 Resources:

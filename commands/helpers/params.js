@@ -105,6 +105,17 @@ exports.updateAppV = async function(appName,version,vParams){
 }
 
 // INSTANCE PARAMS
+exports.setOrgParams = async function(orgName,VpcId,repo){
+    if (!process.env.orgRegion){ throw new Error('Region not set') }
+    const r1 = await writeParam('/infra/orgName',orgName);
+    console.log('Set Org Name:',r1)
+    const r2 = await writeParam('/infra/VpcId',VpcId);
+    console.og('Set VPC ID:',r2);
+    const r3 = await writeParam('/infra/GitHubRepoName',repo || '');
+    console.log('Set GitHub Repo:',r3)
+}
+
+
 exports.addPid = async function(appName,productId){
     if (!process.env.orgRegion){ throw new Error('Region not set') }
     const appKey = `/infra/apps/${appName.toLowerCase()}`

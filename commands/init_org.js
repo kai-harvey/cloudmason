@@ -4,7 +4,7 @@ const { S3Client,HeadBucketCommand } = require("@aws-sdk/client-s3");
 const { EC2Client, DescribeVpcsCommand } = require("@aws-sdk/client-ec2");
 
 const CF = require('./helpers/cf');
-
+const Params = require('./helpers/params');
 
 exports.main = async function(args){
     console.log(`Setting up ${args.name}@ in ${args.region} with repo ${args.repo}`)
@@ -13,6 +13,9 @@ exports.main = async function(args){
     const VpcId = await getDefaultVPC(args.region);
     console.log(`Default VPC: ${VpcId}`);
     
+    // Set Param
+    await Params.setOrgParams(args.name,VpcId,args.repo);
+
     // Deploy Stack
     const success = await CF.deployOrgStack(args.region, {orgName: args.name, VpcId: VpcId, GitHubRepoName: args.repo})
     if (success === false){
@@ -29,14 +32,11 @@ exports.main = async function(args){
 }
 
 exports.updateOrgStack = async function(args){
-    console.log(`Updating ${args.name}@ in ${args.region} with repo ${args.repo}`)
+    console.log(`Updating Org Stack from ${args.stack}`)
 
-    // Get VPC ID
-    const VpcId = await getDefaultVPC(args.region);
-    console.log(`Default VPC: ${VpcId}`);
     
     // Deploy Stack
-    const success = await CF.updateOrgStack(args.region, {orgName: args.name, VpcId: VpcId, GitHubRepoName: args.repo})
+    const success = await CF.updateOrgStack(args.stack)
     if (success === false){
         console.log('ERR:', success);
         throw new Error('Unknown error updating org stack')
