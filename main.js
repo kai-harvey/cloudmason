@@ -19,9 +19,6 @@ const Commands = {
         desc: "Update org stack",
         exec: require('./commands/init_org').updateOrgStack,
         args: [
-            {n: 'name', desc: 'Unique org Name. Letters only', r: true, pattern: `[A-Za-z]{2,20}`},
-            {n: 'region', desc: 'AWS Region for Core Assets. Default us-east-1', r: false},
-            {n: 'repo', desc: 'Github repo name', r: false},
             {n: 'stack', desc: 'Updated Org Stack', r: false}
         ]
     },

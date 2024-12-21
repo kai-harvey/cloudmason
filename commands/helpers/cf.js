@@ -62,7 +62,7 @@ exports.deployS3Stack = async function(stackName,s3Url,params,tag,region){
 }
 
 exports.updateOrgStack = async function(yamlPath){
-    const client = new CloudFormationClient({ region });
+    const client = new CloudFormationClient({ region: process.env.orgRegion });
     
     const stackPath = path.resolve(yamlPath);
     if (!fs.existsSync(stackPath)){
@@ -78,6 +78,7 @@ exports.updateOrgStack = async function(yamlPath){
     };
     const command = new UpdateStackCommand(cmd);
     const response = await client.send(command);
+    console.log('Update response',response);
     return response.StackId;
 }
 
