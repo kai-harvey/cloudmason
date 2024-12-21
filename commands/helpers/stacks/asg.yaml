@@ -27,16 +27,17 @@ Parameters:
   AdminEmail:
     Type: String
     Description: Email for the first admin user
-  AmiId:
-    Type: AWS::EC2::Image::Id
-    Description: Max number of Ec2 instances
   AppVersion:
     Type: String
     Description: Major.minor.build
   InstanceEnvironment:
     Type: String
     Description: Instance enviroment (prod,dev). Setting prod will enable advanced security features.
-  
+#-Strip
+  AmiId:
+    Type: AWS::EC2::Image::Id
+    Description: Max number of Ec2 instances
+#-Strip
 
 Resources:
 # ACM Domain

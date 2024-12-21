@@ -31,25 +31,19 @@ exports.main = async function(args){
     console.log('----------')
     
     // -- Publish AMI to Marketplace
-    // await updateAmiVersion(pubArgs);
+    await updateAmiVersion(pubArgs);
 
     // -- Get Marketplace AMI IDs
     // AmiAlias: '/aws/service/marketplace/prod-shmtmk4gqrfge/1.2'
     const amiAlias = `/aws/service/marketplace/${pubArgs.productId}/${pubArgs.version}`;
     let stackTxt = fs.readFileSync(path.resolve(args.stack),'utf8');
     stackTxt = stackTxt.replace(`ImageId: !Ref AmiId`,`ImageId: resolve:ssm:${amiAlias}`);
-//     console.log('Stack:',stackTxt);
-//     const paramBlock = (
-// `AmiId:
-//   Type: AWS::EC2::Image::Id
-//   Description: Max number of Ec2 instances\n`
-//   );
-//     stackTxt = stackTxt.replace(paramBlock,'');
+    stackTxt = stackTxt.replace(/^#-Strip.+#-Strip/ms,'');
+
     // -- Update CF Template with AMI IDs
     const newFileName = path.join(path.dirname(args.stack), path.basename(args.stack).replace('.yaml',`-mkt.yaml`));
     console.log('Updating Template:',newFileName);
     fs.writeFileSync(newFileName,stackTxt);
-    // -- Publish CFT
     return true
 }
 
