@@ -2,15 +2,10 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Org Cloudformation Template
 
 Parameters:
-  orgName:
-    Type: String
-    Description: Unique name of organization
-  VpcId:
-    Type: String
-    Description: Org VPC
   GitHubRepoName:
-    Type: String
+    Type: AWS::SSM::Parameter::Value<String>
     Description: "GitHub repository name in the format owner/repo"
+    Default: /infra/GitHubRepoName
   
 
 Resources:
@@ -60,7 +55,7 @@ Resources:
       SecurityGroupEgress:
         - IpProtocol: '-1'
           CidrIp: '0.0.0.0/0'
-      VpcId: !Ref VpcId
+      VpcId: '{{resolve:ssm:/infra/vpc_id}}'
 # Bucket Policy
   InfraBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -79,12 +74,6 @@ Resources:
               - !Sub arn:aws:s3:::${InfraBucket}
               - !Sub arn:aws:s3:::${InfraBucket}/*
 # Org Params
-  ParamOrgInfo:
-    Type: 'AWS::SSM::Parameter'
-    Properties:
-      Name: '/infra/orgName'
-      Type: 'String'
-      Value: !Ref orgName
   ParamInstanceProfile:
     Type: 'AWS::SSM::Parameter'
     Properties:
