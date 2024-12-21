@@ -20,10 +20,6 @@ Parameters:
     Type: Number
     Description: Max number of Ec2 instances
     Default: 2
-  EC2InstanceType:
-    Type: String
-    Description: EC2 Instance Type
-    Default: t2.small
   AdminEmail:
     Type: String
     Description: Email for the first admin user
@@ -34,6 +30,10 @@ Parameters:
     Type: String
     Description: Instance enviroment (prod,dev). Setting prod will enable advanced security features.
 #-Strip
+  EC2InstanceType:
+    Type: String
+    Description: EC2 Instance Type
+    Default: m6a.large
   AmiId:
     Type: AWS::EC2::Image::Id
     Description: Max number of Ec2 instances
@@ -197,7 +197,7 @@ Resources:
               source start.sh
         ImageId: !Ref AmiId
         DisableApiTermination: "true"
-        InstanceType: !Ref EC2InstanceType
+        InstanceType: m6a.large
         SecurityGroupIds: 
           - !Ref AppEc2SecurityGroup
   AppEc2SecurityGroup:
