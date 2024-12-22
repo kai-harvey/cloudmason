@@ -30,6 +30,13 @@ const Commands = {
             {n: 'region', desc: 'AWS Region for Core Assets. Default us-east-1', r: false}
         ]
     },
+    'migrate': {
+        desc: "Migrate to version 2",
+        exec: require('./commands/helpers/params').migrate,
+        args: [
+            {n: 't', desc: 'Architecture type: asg | static', r: false}
+        ]
+    },
     'new-app': {
         desc: 'Add a new application',
         exec: require('./commands/new_app').main,
