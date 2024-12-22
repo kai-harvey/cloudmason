@@ -66,8 +66,10 @@ exports.main = async function(args){
         node: app.nodeV,
         py: app.pyV
     });
-    
+    console.log('Instance Launched:',instance_id);
+    console.log('Waiting 60s');
     await sleep(60*1000);
+    console.log('Checking Instance Status');
     await waitUntilInstanceReady(instance_id,process.env.orgRegion);
     
     // Create AMI
