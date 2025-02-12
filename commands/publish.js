@@ -36,6 +36,7 @@ exports.main = async function(args){
     // -- Get Marketplace AMI IDs
     // AmiAlias: '/aws/service/marketplace/prod-shmtmk4gqrfge/1.2'
     const amiAlias = `/aws/service/marketplace/${pubArgs.productId}/${pubArgs.version}`;
+    console.log('AMI Alias:',amiAlias);
     let stackTxt = fs.readFileSync(path.resolve(args.stack),'utf8');
     stackTxt = stackTxt.replace(`ImageId: !Ref AmiId`,`ImageId: resolve:ssm:${amiAlias}`);
     stackTxt = stackTxt.replace(/^#-Strip.+#-Strip/ms,'');
