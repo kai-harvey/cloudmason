@@ -59,7 +59,7 @@ const updateAmiVersion = async ({productId, amiId, version, changeDescription}) 
       // Define the change set to update the AMI version
       const changeSet = {
         Catalog: "AWSMarketplace",
-        Intent: "VALIDATE",
+        Intent: "APPLY",
         ChangeSet: [
           {
             ChangeType: "AddDeliveryOptions",
