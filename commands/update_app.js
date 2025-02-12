@@ -140,6 +140,7 @@ async function launchInstance(launchParams){
         `yum -y install nodejs`,
         `yum -y install python3`,
         `yum -y install unzip`,
+        `npm install -g pm2`,
         `cd /home/ec2-user`,
         `aws s3 cp s3://${process.env.orgBucket}/apps/${launchParams.app.toLowerCase()}/${launchParams.version}/app.zip .`,
         `unzip app.zip -d app`,
