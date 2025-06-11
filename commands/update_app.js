@@ -146,7 +146,7 @@ async function launchInstance(launchParams){
         `aws s3 cp s3://${process.env.orgBucket}/apps/${launchParams.app.toLowerCase()}/${launchParams.version}/app.zip .`,
         `sleep 30`,
         `unzip app.zip -d app`,
-        `touch ami_ok.txt`,
+        `touch app/ami_ok.txt`,
         `rm -r app.zip`
     ].join('\n')
 
