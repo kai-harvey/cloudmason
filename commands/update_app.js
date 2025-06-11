@@ -144,7 +144,7 @@ async function launchInstance(launchParams){
         `npm install -g pm2`,
         `cd /home/ec2-user`,
         `aws s3 cp s3://${process.env.orgBucket}/apps/${launchParams.app.toLowerCase()}/${launchParams.version}/app.zip .`,
-        `sleep 30`,
+        `sleep 10`,
         `unzip app.zip -d app`,
         `touch app/ami_ok.txt`,
         `rm -r app.zip`
