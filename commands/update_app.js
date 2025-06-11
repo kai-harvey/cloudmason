@@ -207,8 +207,8 @@ async function waitUntilInstanceReady(instance_id,region){
         console.log('ERR:::', `Ec2 Instance Not Ready After ${totalSleepTime}s`)
         throw `Ec2 Instance Not Ready After ${totalSleepTime}s`
     } else {
-        console.log(`Instance Ready After ${totalSleepTime}s. Waiting 30s to Proceed`);
-        await sleep(30);
+        console.log(`Instance Ready After ${totalSleepTime}s. Waiting 5m to Proceed`);
+        await sleep(300);
     }
     return true;
 }
