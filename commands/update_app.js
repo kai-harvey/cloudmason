@@ -144,7 +144,7 @@ async function launchInstance(launchParams){
         `npm install -g pm2`,
         `cd /home/ec2-user`,
         `aws s3 cp s3://${process.env.orgBucket}/apps/${launchParams.app.toLowerCase()}/${launchParams.version}/app.zip .`,
-        `sleep 30`,
+        `sleep 10`,
         `unzip app.zip -d app`,
         `touch app/ami_ok.txt`,
         `rm -r app.zip`
@@ -207,8 +207,8 @@ async function waitUntilInstanceReady(instance_id,region){
         console.log('ERR:::', `Ec2 Instance Not Ready After ${totalSleepTime}s`)
         throw `Ec2 Instance Not Ready After ${totalSleepTime}s`
     } else {
-        console.log(`Instance Ready After ${totalSleepTime}s. Waiting 30s to Proceed`);
-        await sleep(30);
+        console.log(`Instance Ready After ${totalSleepTime}s. Waiting 5m to Proceed`);
+        await sleep(300);
     }
     return true;
 }
