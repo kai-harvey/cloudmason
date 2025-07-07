@@ -67,10 +67,12 @@ exports.main = async function(args){
         py: app.pyV
     });
     console.log('Instance Launched:',instance_id);
-    console.log('Waiting 60s');
+    console.log('Waiting 60s to initiate checks');
     await sleep(60*1000);
     console.log('Checking Instance Status');
     await waitUntilInstanceReady(instance_id,process.env.orgRegion);
+    console.log('Waiting 5m for app to be ready');
+    await sleep(300*1000);
     
     // Create AMI
     const buildNumber = (app.versions[args.v]?.currentBuild || 0) + 1;
