@@ -62,7 +62,7 @@ exports.main = async function(args){
     let stackId;
     if (stackExists){
         const stackStatus = await CF.stackStatus(stackName,targetRegion);
-        if (stackStatus.ok !== true){
+        if (stackStatus.status.endsWith('_IN_PROGRESS')){
             console.log(`Stack ${stackName} in ${targetRegion} is ${stackStatus.status}. Wait for completion before relaunching`);
             return false;
         }
