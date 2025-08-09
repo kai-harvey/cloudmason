@@ -315,6 +315,16 @@ class EC2AMIBuilder {
             },
             MinCount: 1,
             MaxCount: 1,
+            BlockDeviceMappings: [
+                {
+                    DeviceName: '/dev/xvda', // Root device for Amazon Linux
+                    Ebs: {
+                        VolumeSize: 20, // Increase from default 8GB to 20GB
+                        VolumeType: 'gp3',
+                        DeleteOnTermination: true
+                    }
+                }
+            ],
             TagSpecifications: [
                 {
                     ResourceType: 'instance',
@@ -450,10 +460,11 @@ class EC2AMIBuilder {
         
         // Application setup commands (dynamic based on S3 URL)
         const appCommands = [
-            ['Downloading Node.js app package from S3', `cd /opt/app && aws s3 cp "${this.s3PackageUrl}" ./app-package.zip`],
-            ['Extracting application package', 'unzip -o app-package.zip >/dev/null'],
-            ['Cleaning up package archive', 'rm -f app-package.zip'],
-            ['Showing application structure', 'cd /opt/app && find . -maxdepth 3 -type f | head -20']
+            ['Downloading Node.js app package from S3', `aws s3 cp "${this.s3PackageUrl}" ./app-package.zip`],
+            ['Extracting application package', 'sudo unzip -o app-package.zip >/dev/null'],
+            ['Cleaning up package archive', 'sudo rm -f app-package.zip'],
+            ['Directory files', 'ls -A .']
+            ['Showing application structure', 'find . -maxdepth 2']
         ];
         
         // Execute all app setup commands
@@ -470,7 +481,7 @@ class EC2AMIBuilder {
         // Cleanup commands before AMI creation
         const cleanupCommands = [
             ['Cleaning up instance before AMI creation', 'sudo dnf clean all && sudo rm -rf /tmp/* /var/tmp/* /var/log/messages* /var/log/secure* ~/.bash_history'],
-            ['Checking disk usage', 'df -h && du -sh /opt/app']
+            ['Checking disk usage', 'df -h && du -sh .']
         ];
         
         // Execute cleanup commands
