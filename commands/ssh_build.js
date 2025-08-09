@@ -626,14 +626,16 @@ class EC2AMIBuilder {
     }
 
     async build() {
+        console.log('Starting SSH AMI Build Process...');
+        const start = Date.now();
         try {
             await this.launchInstance();
             await this.connectSSH();
             await this.setupSystem();
             await this.downloadAndSetupApp();
+            console.log('Build complete after', Math.ceil((Date.now() - start)/1000/60));
             const amiId = await this.createAMI();
-            
-            console.log('\n🎉 AMI Build completed successfully!');
+            console.log('AMI Created after', Math.ceil((Date.now() - start)/1000/60));
             console.log(`📋 Summary:`);
             console.log(`   - AMI ID: ${amiId}`);
             console.log(`   - AMI Name: ${this.amiName}`);
@@ -652,12 +654,8 @@ class EC2AMIBuilder {
 }
 
 async function sshAMI(amiName,s3PackageUrl,instanceType){
-    console.log('Starting SSH AMI Build Process...');
-    const start = Date.now();
     const builder = new EC2AMIBuilder(amiName, instanceType, s3PackageUrl);
     const result = await builder.build();
-    const total = Math.ceil((Date.now() - start)/1000/60);
-    console.log('SSH Build Complete', total, 'm');
     console.log('AMI ID:', result);
     return result;
 }
