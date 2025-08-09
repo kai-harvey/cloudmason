@@ -45,6 +45,7 @@ const SETUP_COMMANDS = [
     ['Installing python', 'sudo dnf -y install python3'],
     ['Installing unzip', 'sudo dnf -y install unzip'],
     ['Installing pm2', 'sudo npm install -g pm2'],
+    ['Creating app directory', 'sudo mkdir -p /app'],
 ];
 
 
@@ -461,10 +462,10 @@ class EC2AMIBuilder {
         // Application setup commands (dynamic based on S3 URL)
         const appCommands = [
             ['Downloading Node.js app package from S3', `aws s3 cp "${this.s3PackageUrl}" ./app-package.zip`],
-            ['Extracting application package', 'sudo unzip -o app-package.zip >/dev/null'],
+            ['Extracting application package', 'sudo unzip -o app-package.zip -d /app >/dev/null'],
             ['Cleaning up package archive', 'sudo rm -f app-package.zip'],
-            ['Directory files', 'ls -A .']
-            ['Showing application structure', 'find . -maxdepth 2']
+            ['Directory files', 'ls -A /app'],
+            ['Showing application structure', 'find /app -maxdepth 2 -name "node_modules" -prune -o -print']
         ];
         
         // Execute all app setup commands
@@ -630,7 +631,6 @@ class EC2AMIBuilder {
             await this.connectSSH();
             await this.setupSystem();
             await this.downloadAndSetupApp();
-            
             const amiId = await this.createAMI();
             
             console.log('\n🎉 AMI Build completed successfully!');
@@ -639,7 +639,7 @@ class EC2AMIBuilder {
             console.log(`   - AMI Name: ${this.amiName}`);
             console.log(`   - Instance Type Used: ${this.instanceType}`);
             console.log(`   - S3 Package: ${this.s3PackageUrl}`);
-            
+
             return amiId;
             
         } catch (error) {
@@ -666,8 +666,7 @@ async function sshAMI(amiName,s3PackageUrl,instanceType){
 // Convenience function for direct usage
 module.exports.buildAMI = sshAMI;
 
-sshAMI('test-ami-1', 's3://coreinfra-infrabucket-qtfrahre6vbl/apps/theorim/3.6/app.zip');
-
+sshAMI('test-ami-2', 's3://coreinfra-infrabucket-qtfrahre6vbl/apps/theorim/3.6/app.zip')
 
 // // CLI usage if called directly
 // if (require.main === module) {
