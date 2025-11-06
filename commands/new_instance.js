@@ -95,6 +95,9 @@ async function getSubnets(region){
     const subnetsData = await ec2Client.send(new DescribeSubnetsCommand({}));
     const subNets = subnetsData.Subnets.filter(s=>{ return s.DefaultForAz === true });
     const subnetList = subNets.map(subnet => subnet.SubnetId  );
+    if (subnetList.length > 3){
+        subnetList.length = 3; // Limit to 3 subnets
+    }
     return subnetList;
 }
 
