@@ -19,13 +19,14 @@
     "@aws-sdk/client-acm": "^3.418.0",
     "@aws-sdk/client-auto-scaling": "^3.470.0",
     "@aws-sdk/client-cloudformation": "^3.418.0",
-    "@aws-sdk/client-ec2": "^3.416.0",
-    "@aws-sdk/client-iam": "^3.418.0",
+    "@aws-sdk/client-ec2": "^3.864.0",
+    "@aws-sdk/client-iam": "^3.864.0",
     "@aws-sdk/client-marketplace-catalog": "^3.716.0",
     "@aws-sdk/client-route-53": "^3.425.0",
     "@aws-sdk/client-s3": "^3.418.0",
     "@aws-sdk/client-ssm": "^3.421.0",
     "adm-zip": "^0.5.10",
+    "ssh2": "^1.16.0",
     "yaml": "^2.6.1"
   }
 }
