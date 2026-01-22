@@ -118,6 +118,14 @@ const Commands = {
             {n: 'out', desc: 'Output path of marketplace stack', r: true}
         ]
     },
+    'await-ami': {
+        desc: 'Wait for an AMI version to be publicly available in marketplace',
+        exec: require('./commands/await-ami').main,
+        args: [
+            {n: 'app', desc: 'Name of existing app', pattern: `[A-Za-z]{2,20}`, r: true},
+            {n: 'v', desc: 'Version to wait for', pattern: `[0-9]{1,20}`, r: true}
+        ]
+    },
     'inspect': {
         desc: 'Get stack status and Ec2 console logs for an instance',
         exec: require('./commands/inspect').main,
