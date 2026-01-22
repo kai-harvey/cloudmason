@@ -3,16 +3,15 @@ on:
   push:
     branches:
       - 'release/**'
+
 jobs:
-  if_merged:
-    if: github.event.pull_request.merged == true
+  publish:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
     steps:
-      - run: echo "Workflow version 2 - OIDC enabled"
-      - run: echo "id-token permission should be write"
+      - run: echo "Workflow version 3 - push trigger"
       
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -28,6 +27,6 @@ jobs:
       - run: npm ci
       - run: npm run build
         env: 
-          branch: ${{ github.base_ref }}
+          branch: ${{ github.ref_name }}
           build: ${{ github.run_number }}
       - run: npm publish --provenance --access public
