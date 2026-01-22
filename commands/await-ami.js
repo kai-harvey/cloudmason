@@ -52,31 +52,54 @@ const waitForVersionAvailability = async (client, productId, version) => {
             } else {
                 details = entityResponse.Details;
             }
-
             // Check if version exists in Versions array
             const versionInfo = details.Versions?.find(v => v.VersionTitle === version);
+            console.log('Version details:', versionInfo);
 
             if (versionInfo) {
-                // Check if version has delivery options (indicates it's available)
-                const hasDeliveryOptions = versionInfo.DeliveryOptions &&
+                // Check 1: Version must have Sources array with AMI
+                const hasSources = Array.isArray(versionInfo.Sources) &&
+                                  versionInfo.Sources.length > 0 &&
+                                  versionInfo.Sources.some(source => source.Image && source.Image.startsWith('ami-'));
+
+                // Check 2: Version must have DeliveryOptions array
+                const hasDeliveryOptions = Array.isArray(versionInfo.DeliveryOptions) &&
                                           versionInfo.DeliveryOptions.length > 0;
 
-                if (hasDeliveryOptions) {
-                    // Check if any delivery option has Sources (indicates AMI is accessible)
-                    const hasActiveSources = versionInfo.DeliveryOptions.some(
-                        option => option.Details?.AmiDeliveryOptionDetails?.AmiSource ||
-                                 option.Details?.AmiSource
-                    );
+                // Check 3: At least one DeliveryOption must have Visibility set to 'Public'
+                const isPubliclyVisible = hasDeliveryOptions &&
+                                         versionInfo.DeliveryOptions.some(option => option.Visibility === 'Public');
 
-                    if (hasActiveSources) {
-                        console.log(`✓ Version ${version} is now available to consumers`);
-                        console.log("Version details:", JSON.stringify(versionInfo, null, 2));
-                        return true;
-                    }
+                if (hasSources && hasDeliveryOptions && isPubliclyVisible) {
+                    console.log(`✓ Version ${version} is now available to consumers`);
+
+                    // Extract and display AMI details
+                    const amiSources = versionInfo.Sources.filter(s => s.Image);
+                    amiSources.forEach(source => {
+                        console.log(`  AMI ID: ${source.Image}`);
+                        console.log(`  Architecture: ${source.Architecture}`);
+                        console.log(`  Type: ${source.VirtualizationType}`);
+                    });
+
+                    // Display public delivery options
+                    const publicOptions = versionInfo.DeliveryOptions.filter(opt => opt.Visibility === 'Public');
+                    console.log(`  Public Delivery Options: ${publicOptions.length}`);
+                    publicOptions.forEach(opt => {
+                        console.log(`    - ${opt.Title || opt.Type}`);
+                        if (opt.AmiAlias) console.log(`      SSM Alias: ${opt.AmiAlias}`);
+                    });
+
+                    return true;
                 }
 
+                // Provide detailed feedback on what's missing
                 const elapsedMinutes = Math.floor((attempts * 5) / 60);
-                console.log(`Version ${version} found but not yet fully available (${elapsedMinutes}m ${(attempts * 5) % 60}s elapsed, attempt ${attempts + 1}/${maxAttempts})`);
+                const reasons = [];
+                if (!hasSources) reasons.push('no AMI sources');
+                if (!hasDeliveryOptions) reasons.push('no delivery options');
+                if (hasDeliveryOptions && !isPubliclyVisible) reasons.push('not publicly visible yet');
+
+                console.log(`Version ${version} found but not yet fully available: ${reasons.join(', ')} (${elapsedMinutes}m ${(attempts * 5) % 60}s elapsed, attempt ${attempts + 1}/${maxAttempts})`);
             } else {
                 const elapsedMinutes = Math.floor((attempts * 5) / 60);
                 console.log(`Version ${version} not yet visible in entity (${elapsedMinutes}m ${(attempts * 5) % 60}s elapsed, attempt ${attempts + 1}/${maxAttempts})`);
