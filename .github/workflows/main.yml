@@ -18,7 +18,16 @@ jobs:
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
-          
+      - name: Debug OIDC - check actual token request
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              const token = await core.getIDToken('https://registry.npmjs.org');
+              console.log('OIDC token retrieved successfully, length:', token.length);
+            } catch (err) {
+              console.log('Failed to get OIDC token:', err.message);
+            }
       - name: Debug OIDC token
         run: |
           echo "ACTIONS_ID_TOKEN_REQUEST_URL exists: ${{ env.ACTIONS_ID_TOKEN_REQUEST_URL != '' }}"
