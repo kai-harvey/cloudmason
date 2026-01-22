@@ -1,25 +1,26 @@
 name: Publish Node.js Package
-
 on:
   pull_request:
     types:
       - closed
     branches:
       - 'release/**'
-
 jobs:
   if_merged:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # This is the critical addition
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
+      - run: npm ci
       - run: npm run build
         env: 
           branch: ${{ github.base_ref }}
           build: ${{ github.run_number }}
-      - run: npm ci
       - run: npm publish --provenance --access public
