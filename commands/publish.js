@@ -1,4 +1,4 @@
-const { MarketplaceCatalogClient, StartChangeSetCommand,DescribeChangeSetCommand, DescribeEntityCommand} = require("@aws-sdk/client-marketplace-catalog");
+const { MarketplaceCatalogClient, StartChangeSetCommand, DescribeChangeSetCommand } = require("@aws-sdk/client-marketplace-catalog");
 const { EC2Client, DescribeImagesCommand } = require("@aws-sdk/client-ec2");
 const fs = require('fs');
 const path = require('path');
@@ -15,8 +15,7 @@ exports.main = async function(args){
     // -- Get Version & Descriptions
     const pubArgs = {
         version: args.v,
-        changeDescription: args.desc,
-        wait: args.wait || false
+        changeDescription: args.desc
     };
 
     // -- Get Params
@@ -46,6 +45,11 @@ exports.main = async function(args){
     const newFileName = path.resolve(args.out);
     console.log('Updating Template:',newFileName);
     fs.writeFileSync(newFileName,stackTxt);
+
+    // -- Suggest next step
+    console.log('\nTo wait for this version to be publicly available in marketplace, run:');
+    console.log(`  mason await-ami -app ${args.app} -v ${args.v}`);
+
     return true
 }
 
@@ -54,7 +58,7 @@ exports.main = async function(args){
 
 // Update AMI Function
 
-const updateAmiVersion = async ({productId, amiId, version, changeDescription, wait}) => {
+const updateAmiVersion = async ({productId, amiId, version, changeDescription}) => {
     const client = new MarketplaceCatalogClient({ region: process.env.orgRegion }); // Update the region if needed
     console.log('Updating AMI version:',productId, amiId, version, changeDescription);
     try {
@@ -142,86 +146,10 @@ const updateAmiVersion = async ({productId, amiId, version, changeDescription, w
         }
       }
 
-      // If wait flag is set, poll entity until version is publicly available
-      if (wait && status === "SUCCEEDED") {
-        console.log("Waiting for version to become available to consumers...");
-        await waitForVersionAvailability(client, productId, version);
-      }
-
     } catch (error) {
       console.error("Error updating AMI version:", error);
       throw error;
     }
-};
-
-
-// Wait for Version Availability Function
-const waitForVersionAvailability = async (client, productId, version) => {
-    const maxAttempts = 1080; // 90 minutes with 5-second intervals (90 * 60 / 5 = 1080)
-    let attempts = 0;
-
-    console.log(`Polling entity for version ${version} availability...`);
-    console.log(`Timeout: 90 minutes (will check every 5 seconds)`);
-
-    while (attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
-
-        try {
-            const describeEntityCommand = new DescribeEntityCommand({
-                Catalog: "AWSMarketplace",
-                EntityId: productId,
-            });
-
-            const entityResponse = await client.send(describeEntityCommand);
-
-            // Parse the Details field which contains version information
-            let details;
-            if (typeof entityResponse.Details === 'string') {
-                details = JSON.parse(entityResponse.Details);
-            } else {
-                details = entityResponse.Details;
-            }
-
-            // Check if version exists in Versions array
-            const versionInfo = details.Versions?.find(v => v.VersionTitle === version);
-
-            if (versionInfo) {
-                // Check if version has delivery options (indicates it's available)
-                const hasDeliveryOptions = versionInfo.DeliveryOptions &&
-                                          versionInfo.DeliveryOptions.length > 0;
-
-                if (hasDeliveryOptions) {
-                    // Check if any delivery option has Sources (indicates AMI is accessible)
-                    const hasActiveSources = versionInfo.DeliveryOptions.some(
-                        option => option.Details?.AmiDeliveryOptionDetails?.AmiSource ||
-                                 option.Details?.AmiSource
-                    );
-
-                    if (hasActiveSources) {
-                        console.log(`✓ Version ${version} is now available to consumers`);
-                        console.log("Version details:", JSON.stringify(versionInfo, null, 2));
-                        return true;
-                    }
-                }
-
-                const elapsedMinutes = Math.floor((attempts * 5) / 60);
-                console.log(`Version ${version} found but not yet fully available (${elapsedMinutes}m ${(attempts * 5) % 60}s elapsed, attempt ${attempts + 1}/${maxAttempts})`);
-            } else {
-                const elapsedMinutes = Math.floor((attempts * 5) / 60);
-                console.log(`Version ${version} not yet visible in entity (${elapsedMinutes}m ${(attempts * 5) % 60}s elapsed, attempt ${attempts + 1}/${maxAttempts})`);
-            }
-
-        } catch (error) {
-            console.error("Error checking entity status:", error.message);
-        }
-
-        attempts++;
-    }
-
-    console.warn(`⚠ Warning: Version availability check timed out after 90 minutes`);
-    console.warn("Version may still be under AWS Marketplace review");
-    console.warn("The changeset succeeded, but the version is not yet publicly available to consumers");
-    return false;
 };
 
 
