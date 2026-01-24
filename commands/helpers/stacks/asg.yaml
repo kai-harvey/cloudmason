@@ -187,7 +187,7 @@ Resources:
           Name:
             Ref: AppEc2Profile
         UserData:
-          Fn::Base64: 
+          Fn::Base64:
             !Sub |
               #!/bin/bash
               echo "Running user data"

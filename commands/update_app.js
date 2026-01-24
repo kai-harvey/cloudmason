@@ -1,15 +1,10 @@
 const path = require('path');
 const fs = require('fs');
-const EC2 = require('./helpers/ec2');
-const { EC2Client, RunInstancesCommand,CreateImageCommand,TerminateInstancesCommand,DescribeInstanceStatusCommand,DeregisterImageCommand,DescribeImagesCommand,CopyImageCommand } = require("@aws-sdk/client-ec2");
-
 const AdmZip = require("adm-zip");
 
 const Params = require('./helpers/params')
 const S3 = require('./helpers/s3');
-
-
-const INSTANCE_TYPE="t2.micro"
+const { buildAMI } = require('./ssh_build');
 
 exports.main = async function(args){
     console.log(`Updating ${args.app} v${args.v}`);
@@ -52,42 +47,19 @@ exports.main = async function(args){
     }
 
     // --- III BUILD IMAGE ---
-    // Launch ec2
-    const orgParams = await Params.getOrgConfig();
-
-    // const awsLinuxAMI = await findLinuxAMI(process.env.orgRegion);
-    const awsLinuxAMI = EC2.awsLinuxAMI(process.env.orgRegion);
-    const instance_id = await launchInstance({
-        app: app.name,
-        linuxAMI: awsLinuxAMI,
-        version: args.v,
-        sec_group: orgParams.buildSecGroup,
-        iam: orgParams.buildInstanceProfile,
-        node: app.nodeV,
-        py: app.pyV
-    });
-    console.log('Instance Launched:',instance_id);
-    console.log('Waiting 60s to initiate checks');
-    await sleep(60*1000);
-    console.log('Checking Instance Status');
-    await waitUntilInstanceReady(instance_id,process.env.orgRegion);
-    console.log('Waiting 5m for app to be ready');
-    await sleep(300*1000);
-    
-    // Create AMI
     const buildNumber = (app.versions[args.v]?.currentBuild || 0) + 1;
     const appVID = `${app.name.toLowerCase()}-v${args.v}.${buildNumber}`;
 
-    var success = false;
+    console.log(`Building AMI: ${appVID}`);
+    console.log(`Using local zip: ${zipFilePath}`);
+
     let ami_id;
     try {
-        ami_id = await createAMI(instance_id, appVID,process.env.orgRegion)
-        success = true;
-    } catch(e){
-        console.log("Error Creating AMI:" + e)
+        ami_id = await buildAMI(appVID, zipFilePath);
+    } catch(e) {
+        console.log("Error Creating AMI:" + e);
+        throw new Error("Error - Build Not Complete");
     }
-    await terminateInstance(instance_id,process.env.orgRegion)
-    if (success === false){ throw new Error("Error - Build Not Complete") }
 
     // --- IV UPDATE PARAMS ---
     const versionInfo = {
@@ -131,122 +103,4 @@ async function prepZip(appPath){
     }
     process.on('exit', function(){ fs.unlinkSync(zipPath) });
     return zipPath;
-}
-
-async function launchInstance(launchParams){
-    console.log('Launching Instance in ' + process.env.orgRegion);
-    const nodeRepo = launchParams.node === '' ? 'echo default_version' : `https://rpm.nodesource.com/setup_${launchParams.node}.x | sudo bash -`;
-    const user_data = [
-        `#!/bin/bash -xe`,
-        nodeRepo,
-        `yum -y install nodejs`,
-        `yum install -y amazon-cloudwatch-agent`,
-        `yum -y install python3`,
-        `yum -y install unzip`,
-        `npm install -g pm2`,
-        `cd /home/ec2-user`,
-        `aws s3 cp s3://${process.env.orgBucket}/apps/${launchParams.app.toLowerCase()}/${launchParams.version}/app.zip .`,
-        `sleep 10`,
-        `unzip app.zip -d app`,
-        `touch app/ami_ok.txt`,
-        `rm -r app.zip`
-    ].join('\n')
-
-    const ud_b64 = Buffer.from(user_data).toString('base64');
-
-    const client = new EC2Client({region: process.env.orgRegion });
-
-    const createInstanceParams = {
-        ImageId: launchParams.linuxAMI,
-        InstanceType: INSTANCE_TYPE,
-        SecurityGroupIds: [
-            launchParams.sec_group
-        ],
-        MinCount: 1,
-        MaxCount: 1,
-        UserData: ud_b64,
-        IamInstanceProfile: {
-            Arn: launchParams.iam
-        }
-    };
-    const command = new RunInstancesCommand(createInstanceParams);
-    const response = await client.send(command);
-    const instance_id = response.Instances[0].InstanceId
-   
-    console.log('Instance Launched:',instance_id);
-    return instance_id;
-}
-
-async function waitUntilInstanceReady(instance_id,region){
-    console.log(`Awaiting ${instance_id} status of ok`)
-    const client = new EC2Client({region});
-    const input = { // DescribeInstanceStatusRequest
-        InstanceIds: [ // InstanceIdStringList
-            instance_id
-        ],
-        DryRun: false,
-        IncludeAllInstances: true
-    };
-    
-    let totalSleepTime = 0;
-    let ok = false;
-    const command = new DescribeInstanceStatusCommand(input);
-    for (let i=0; i<100; i++){
-        const response = await client.send(command);
-        const status = response.InstanceStatuses[0].InstanceStatus.Status;
-        console.log(`\tCheck ${i+1} @ ${totalSleepTime}s: EC2 Status is ${status}`)
-        if (status !== 'ok'){
-            await sleep(10000);
-            totalSleepTime += 10;
-        } else {
-            console.log('Ec2 Instance Ready:' + status);
-            ok = true;
-            break;
-        }
-    }
-
-    if (ok === false){
-        console.log('ERR:::', `Ec2 Instance Not Ready After ${totalSleepTime}s`)
-        throw `Ec2 Instance Not Ready After ${totalSleepTime}s`
-    } else {
-        console.log(`Instance Ready After ${totalSleepTime}s. Waiting 5m to Proceed`);
-        await sleep(300000);
-    }
-    return true;
-}
-
-async function createAMI(instance_id,image_name,region){
-    console.log(`Building ${image_name} in ${region}`)
-    const client = new EC2Client({region});
-    const input = { // CreateImageRequest
-        Description: `Base Application Image`,
-        DryRun: false,
-        InstanceId: instance_id, // required
-        Name: image_name, // required
-        NoReboot: true
-      };
-      const command = new CreateImageCommand(input);
-      const response = await client.send(command);
-      console.log(`Created Image ${image_name} ID:${response.ImageId}`)
-      return response.ImageId;
-}
-
-async function terminateInstance(instance_id,region){
-    console.log('Terminating Instance ' + instance_id)
-    const client = new EC2Client({region});
-    const input = { // TerminateInstancesRequest
-        InstanceIds: [ instance_id ],
-        DryRun: false,
-    };
-    const command = new TerminateInstancesCommand(input);
-    const response = await client.send(command);
-    return true;
-}
-
-
-async function sleep(time){
-    return new Promise(function (resolve, reject) {
-        setTimeout(function () { resolve(true);
-        }, time);
-    });
 }
