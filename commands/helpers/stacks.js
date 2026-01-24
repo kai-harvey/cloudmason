@@ -13,7 +13,7 @@ exports.get = function(stackType,params){
 }
 
 Stacks.asg = function(stackText,params){
-    let bootScript = `#!/bin/bash -xe\ncd /home/ec2-user/app\n`;
+    let bootScript = `#!/bin/bash -xe\ncd /app\n`;
     if (params.lang == 'py'){
         bootScript += 'py start .'
     } else {
