@@ -35,7 +35,7 @@ const SETUP_COMMANDS = [
     ['Installing python', 'sudo dnf -y install python3'],
     ['Installing unzip', 'sudo dnf -y install unzip'],
     ['Installing pm2', 'sudo npm install -g pm2'],
-    ['Creating app directory', 'sudo mkdir -p /app'],
+    ['Creating app directory', 'sudo mkdir -p /home/ec2-user/app'],
 ];
 
 
@@ -415,10 +415,11 @@ class EC2AMIBuilder {
 
         // Application setup commands
         const appCommands = [
-            ['Extracting application package', 'sudo unzip -o /tmp/app.zip -d /app'],
+            ['Extracting application package', 'sudo unzip -o /tmp/app.zip -d /home/ec2-user/app'],
+            ['Setting ownership to ec2-user', 'sudo chown -R ec2-user:ec2-user /home/ec2-user/app'],
             ['Cleaning up package archive', 'rm -f /tmp/app.zip'],
-            ['Directory files', 'ls -A /app'],
-            ['Showing application structure', 'find /app -maxdepth 2 -name "node_modules" -prune -o -print']
+            ['Directory files', 'ls -la /home/ec2-user/app'],
+            ['Showing application structure', 'find /home/ec2-user/app -maxdepth 2 -name "node_modules" -prune -o -print']
         ];
 
         // Execute all app setup commands
