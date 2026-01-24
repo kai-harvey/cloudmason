@@ -27,7 +27,7 @@ const path = require('path');
 
 // All SSH setup commands - array of [description, command]
 const SETUP_COMMANDS = [
-    ['Updating system packages', 'sudo dnf update -y'],
+    ['Upgrading to latest AL2023 release', 'sudo dnf upgrade --releasever=latest -y'],
     ['Setting up NodeSource for Node.js 24 LTS', 'curl -fsSL https://rpm.nodesource.com/setup_24.x | sudo bash -'],
     ['Installing nodejs', 'sudo dnf install -y nodejs'],
     ['Node version', 'node --version'],
@@ -479,7 +479,7 @@ class EC2AMIBuilder {
         console.log('⏳ Waiting for AMI to be available (this may take several minutes)...');
         
         await waitUntilImageAvailable(
-            { client: this.ec2Client, maxWaitTime: 1800 },
+            { client: this.ec2Client, maxWaitTime: 3800 },
             { ImageIds: [amiId] }
         );
         
