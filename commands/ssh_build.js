@@ -432,11 +432,25 @@ class EC2AMIBuilder {
 
     async createAMI() {
         console.log('📸 Creating AMI from instance...');
-        
-        // Cleanup commands before AMI creation
+
+        // Cleanup commands before AMI creation - remove all sensitive data
         const cleanupCommands = [
-            ['Cleaning up instance before AMI creation', 'sudo dnf clean all && sudo rm -rf /tmp/* /var/tmp/* /var/log/messages* /var/log/secure* ~/.bash_history'],
-            ['Checking disk usage', 'df -h && du -sh .']
+            // Remove SSH authorized keys (contains the temporary build key)
+            ['Removing SSH authorized keys', 'rm -f ~/.ssh/authorized_keys && sudo rm -f /root/.ssh/authorized_keys'],
+            // Remove SSH host keys (new instances will regenerate their own)
+            ['Removing SSH host keys', 'sudo rm -f /etc/ssh/ssh_host_*'],
+            // Clean cloud-init so it runs fresh on new instances
+            ['Cleaning cloud-init data', 'sudo rm -rf /var/lib/cloud/*'],
+            // Reset machine-id for unique instance identification
+            ['Resetting machine-id', 'sudo truncate -s 0 /etc/machine-id'],
+            // Clean bash history for all users
+            ['Cleaning bash history', 'rm -f ~/.bash_history && sudo rm -f /root/.bash_history'],
+            // Clean logs and temp files
+            ['Cleaning logs and temp files', 'sudo rm -rf /tmp/* /var/tmp/* /var/log/messages* /var/log/secure* /var/log/cloud-init*.log'],
+            // Clean DNF cache
+            ['Cleaning DNF cache', 'sudo dnf clean all'],
+            // Verify cleanup and check disk usage
+            ['Checking disk usage', 'df -h && du -sh /home/ec2-user/app']
         ];
         
         // Execute cleanup commands
