@@ -228,7 +228,7 @@ class EC2AMIBuilder {
                 {
                     DeviceName: '/dev/xvda', // Root device for Amazon Linux
                     Ebs: {
-                        VolumeSize: 20, // Increase from default 8GB to 20GB
+                        VolumeSize: 40, // Increase from default 8GB to 20GB
                         VolumeType: 'gp3',
                         DeleteOnTermination: true
                     }
