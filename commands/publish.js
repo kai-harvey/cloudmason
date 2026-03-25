@@ -27,6 +27,7 @@ exports.main = async function(args){
         throw new Error('Version not found:' + pubArgs.version);
     }
     pubArgs.amiId = instanceVersion.baseAMI_Id;
+    const arch = instanceVersion.arch || 'x86_64';
     console.log('Publishing AMI:\n\t',Object.entries(pubArgs).map(([k,v])=>{return `${k}:${v}`}).join('\n\t'));
     console.log('----------')
     
@@ -88,10 +89,12 @@ const updateAmiVersion = async ({productId, amiId, version, changeDescription}) 
                                     "AccessRoleArn": "arn:aws:iam::590183947985:role/Theorim_MarketPlaceRole",
                                     "UserName": "ec2-user",
                                     "OperatingSystemName": "AMAZONLINUX",
-                                    "OperatingSystemVersion": "Amazon Linux 2 AMI 2.0.20220207.1 x86_64 HVM gp2"
+                                    "OperatingSystemVersion": arch === 'arm'
+                                        ? "Amazon Linux 2023 arm64 HVM"
+                                        : "Amazon Linux 2 AMI 2.0.20220207.1 x86_64 HVM gp2"
                                 },
                                 "UsageInstructions": "Visit Theorim.ai/install for installation instructions",
-                                "RecommendedInstanceType": "m6a.large",
+                                "RecommendedInstanceType": arch === 'arm' ? "r8g.medium" : "m6a.large",
                                 "SecurityGroups":
                                 [
                                     {

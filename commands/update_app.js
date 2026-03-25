@@ -50,12 +50,15 @@ exports.main = async function(args){
     const buildNumber = (app.versions[args.v]?.currentBuild || 0) + 1;
     const appVID = `${app.name.toLowerCase()}-v${args.v}.${buildNumber}`;
 
-    console.log(`Building AMI: ${appVID}`);
+    const arch = args.arch || 'x86_64';
+    const buildInstanceType = arch === 'arm' ? 'r8g.medium' : 'm6a.large';
+
+    console.log(`Building AMI: ${appVID} (${arch}, ${buildInstanceType})`);
     console.log(`Using local zip: ${zipFilePath}`);
 
     let ami_id;
     try {
-        ami_id = await buildAMI(appVID, zipFilePath);
+        ami_id = await buildAMI(appVID, zipFilePath, buildInstanceType, arch);
     } catch(e) {
         console.log("Error Creating AMI:" + e);
         throw new Error("Error - Build Not Complete");
@@ -68,7 +71,8 @@ exports.main = async function(args){
         stackURL: `https://s3.${process.env.orgRegion}.amazonaws.com/${process.env.orgBucket}/apps/${args.app.toLowerCase()}/${args.v}/stack.yaml`,
         baseAMI_Id: ami_id,
         currentBuild: buildNumber,
-        updated: Date.now()
+        updated: Date.now(),
+        arch: arch
     }
     await Params.updateAppV(app.name,args.v,versionInfo);
 

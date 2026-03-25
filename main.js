@@ -67,7 +67,8 @@ const Commands = {
             {n: 'app', desc: 'Name of existing app', pattern: `[A-Za-z]{2,20}`, r: true},
             {n: 'v', desc: 'Version to update', pattern: `[0-9]{1,20}`, r: true},
             {n: 'path', desc: 'Path to app zip file or folder', r: true},
-            {n: 'stack', desc: 'Path to updated JSON or YML stack', r: false}
+            {n: 'stack', desc: 'Path to updated JSON or YML stack', r: false},
+            {n: 'arch', desc: 'CPU architecture: x86_64 (default) or arm', r: false, pattern: '^(x86_64|arm)$'}
         ]
     },
     'update-stack': {
