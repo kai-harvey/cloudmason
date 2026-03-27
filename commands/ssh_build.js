@@ -40,7 +40,7 @@ const SETUP_COMMANDS = [
 
 
 class EC2AMIBuilder {
-    constructor(amiName, instanceType = 'm6a.large', localZipPath) {
+    constructor(amiName, instanceType = 'm6a.large', localZipPath, arch = 'x86_64') {
         if (!amiName || !localZipPath) {
             throw new Error('amiName and localZipPath are required parameters');
         }
@@ -48,6 +48,7 @@ class EC2AMIBuilder {
         this.amiName = amiName;
         this.instanceType = instanceType;
         this.localZipPath = localZipPath;
+        this.arch = arch;
 
         // AWS clients
         const region = process.env.orgRegion || process.env.AWS_REGION || 'us-east-1';
@@ -77,7 +78,7 @@ class EC2AMIBuilder {
             Filters: [
                 {
                     Name: 'name',
-                    Values: ['al2023-ami-*-x86_64']
+                    Values: [this.arch === 'arm' ? 'al2023-ami-*-arm64' : 'al2023-ami-*-x86_64']
                 },
                 {
                     Name: 'owner-alias',
@@ -586,8 +587,8 @@ class EC2AMIBuilder {
     }
 }
 
-async function sshAMI(amiName, localZipPath, instanceType){
-    const builder = new EC2AMIBuilder(amiName, instanceType, localZipPath);
+async function sshAMI(amiName, localZipPath, instanceType, arch){
+    const builder = new EC2AMIBuilder(amiName, instanceType, localZipPath, arch);
     const result = await builder.build();
     console.log('AMI ID:', result);
     return result;
