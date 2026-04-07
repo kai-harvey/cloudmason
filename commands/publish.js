@@ -27,10 +27,10 @@ exports.main = async function(args){
         throw new Error('Version not found:' + pubArgs.version);
     }
     pubArgs.amiId = instanceVersion.baseAMI_Id;
-    const arch = instanceVersion.arch || 'x86_64';
+    pubArgs.arch = instanceVersion.arch || 'x86_64';
     console.log('Publishing AMI:\n\t',Object.entries(pubArgs).map(([k,v])=>{return `${k}:${v}`}).join('\n\t'));
     console.log('----------')
-    
+
     // -- Publish AMI to Marketplace
     await updateAmiVersion(pubArgs);
 
@@ -59,7 +59,7 @@ exports.main = async function(args){
 
 // Update AMI Function
 
-const updateAmiVersion = async ({productId, amiId, version, changeDescription}) => {
+const updateAmiVersion = async ({productId, amiId, version, changeDescription, arch}) => {
     const client = new MarketplaceCatalogClient({ region: process.env.orgRegion }); // Update the region if needed
     console.log('Updating AMI version:',productId, amiId, version, changeDescription);
     try {
