@@ -28,14 +28,14 @@ exports.main = async function(args){
 
 // Wait for Version Availability Function
 const waitForVersionAvailability = async (client, productId, version) => {
-    const maxAttempts = 1080; // 90 minutes with 5-second intervals (90 * 60 / 5 = 1080)
+    const maxAttempts = 180; // 90 minutes with 30-second intervals (90 * 60 / 30 = 180)
     let attempts = 0;
 
     console.log(`Polling entity for version ${version} availability...`);
-    console.log(`Timeout: 90 minutes (will check every 5 seconds)`);
+    console.log(`Timeout: 90 minutes (will check every 30 seconds)`);
 
     while (attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+        await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30 seconds
 
         try {
             const describeEntityCommand = new DescribeEntityCommand({
@@ -54,7 +54,6 @@ const waitForVersionAvailability = async (client, productId, version) => {
             }
             // Check if version exists in Versions array
             const versionInfo = details.Versions?.find(v => v.VersionTitle === version);
-            console.log('Version details:', versionInfo);
 
             if (versionInfo) {
                 // Check 1: Version must have Sources array with AMI

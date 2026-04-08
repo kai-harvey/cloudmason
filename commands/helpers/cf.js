@@ -1,4 +1,4 @@
-const { CloudFormationClient,ListStackResourcesCommand, CreateStackCommand,UpdateStackCommand, DeleteStackCommand, ValidateTemplateCommand,DescribeStacksCommand } = require('@aws-sdk/client-cloudformation');
+const { CloudFormationClient,ListStackResourcesCommand, CreateStackCommand,UpdateStackCommand, DeleteStackCommand, ValidateTemplateCommand,DescribeStacksCommand, GetTemplateSummaryCommand } = require('@aws-sdk/client-cloudformation');
 
 const fs = require('fs');
 const path = require('path')
@@ -84,7 +84,15 @@ exports.updateOrgStack = async function(yamlPath){
 
 exports.updateStack = async function(stackName,s3Url,params,region){
     const client = new CloudFormationClient({ region });
-    const cfParams = Object.keys(params).map(k=>{ return { ParameterKey: k, ParameterValue: params[k] } })
+
+    // Get the template's declared parameters so we only pass ones that exist
+    const summary = await client.send(new GetTemplateSummaryCommand({ TemplateURL: s3Url }));
+    const templateParamKeys = new Set((summary.Parameters || []).map(p => p.ParameterKey));
+
+    const cfParams = Object.keys(params)
+        .filter(k => templateParamKeys.has(k))
+        .map(k => { return { ParameterKey: k, ParameterValue: params[k] } });
+
     const cmd = {
         StackName: stackName,
         TemplateURL: s3Url,
