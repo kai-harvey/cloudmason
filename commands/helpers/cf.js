@@ -90,11 +90,11 @@ exports.updateStack = async function(stackName,s3Url,params,region){
     // Get the template's declared parameters so we only pass ones that exist
     const summary = await client.send(new GetTemplateSummaryCommand({ TemplateURL: s3Url }));
     const templateParamKeys = new Set((summary.Parameters || []).map(p => p.ParameterKey));
-
+    console.log('Retrieved Template Parameters:', templateParamKeys);
     const cfParams = Object.keys(params)
         .filter(k => templateParamKeys.has(k))
         .map(k => { return { ParameterKey: k, ParameterValue: params[k] } });
-
+    console.log('Filtered CF Parameters for Update:', cfParams);
     const cmd = {
         StackName: stackName,
         TemplateURL: s3Url,
