@@ -56,6 +56,8 @@ exports.deployS3Stack = async function(stackName,s3Url,params,tag,region){
         Parameters: cfParams,
         Tags: cfTags
     };
+    console.log('Deploying stack from:\n', s3Url);
+    console.log('Deploying stack with params:\n', cfParams);
 
     const result = await client.send(new CreateStackCommand(input));
     return result.StackId;
