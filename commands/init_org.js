@@ -1,10 +1,9 @@
-const fs = require('fs');
-const path = require('path');
 const { S3Client,HeadBucketCommand } = require("@aws-sdk/client-s3");
 const { EC2Client, DescribeVpcsCommand } = require("@aws-sdk/client-ec2");
 
 const CF = require('./helpers/cf');
 const Params = require('./helpers/params');
+const OrgConfig = require('./helpers/org_config');
 
 exports.main = async function(args){
     console.log(`Setting up ${args.name}@ in ${args.region} with repo ${args.repo}`)
@@ -23,11 +22,8 @@ exports.main = async function(args){
         throw new Error('Org already exists')
     }
 
-    // Set org.txt
-    const orgPath = path.resolve(__dirname,'..','org.txt');
-    const orgData = `${args.name},${args.region}`;
-    fs.writeFileSync(orgPath,orgData,'utf-8')
-    console.log('Set up org:',orgData)
+    OrgConfig.write({ name: args.name, region: args.region });
+    console.log('Set up org:', args.name, args.region)
     return true;
 }
 
@@ -48,11 +44,8 @@ exports.updateOrgStack = async function(args){
 }
 
 exports.setOrg = async function(args){
-    // Set org.txt
-    const orgPath = path.resolve(__dirname,'..','org.txt');
-    const orgData = `${args.name},${args.region}`;
-    fs.writeFileSync(orgPath,orgData,'utf-8')
-    console.log('Set org:',orgData)
+    OrgConfig.write({ name: args.name, region: args.region });
+    console.log('Set org:', args.name, args.region)
     return true;
 }
 

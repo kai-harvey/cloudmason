@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 
-const path = require('path')
-const fs = require('fs')
-
 const Params = require('./commands/helpers/params');
+const OrgConfig = require('./commands/helpers/org_config');
 
 const Commands = {
     'init-org': {
@@ -115,8 +113,9 @@ const Commands = {
             {n: 'app', desc: 'Name of existing app', pattern: `[A-Za-z]{2,20}`, r: true},
             {n: 'desc', desc: 'Description of Changes', r: true},
             {n: 'v', desc: 'Version to launch', pattern: `[0-9]{1,20}`, r: true},
-            {n: 'stack', desc: 'Path of stack.yaml', r: true},
-            {n: 'out', desc: 'Output path of marketplace stack', r: true}
+            {n: 'stack', desc: 'Path of stack.yaml (required for AMI-only publish)', r: false},
+            {n: 'out', desc: 'Output path of marketplace stack (AMI-only publish)', r: false},
+            {n: 'cft', desc: 'Publish as AMI + CloudFormation Template delivery', r: false}
         ]
     },
     'await-ami': {
@@ -257,16 +256,12 @@ function checkNodeVersion() {
 }
 
 async function readOrgInfo(){
-    const orgPath = path.resolve(__dirname,'org.txt');
-    if (fs.existsSync(orgPath)){
-        const orgInfo = fs.readFileSync(orgPath,'utf-8').split(',');
-        process.env.orgName = orgInfo[0];
-        process.env.orgRegion = orgInfo[1];
-        process.env.orgBucket = await Params.getOrgBucket();
-        return true;
-    } else {
-        return false;
-    }
+    const cfg = OrgConfig.read();
+    if (!cfg) return false;
+    process.env.orgName = cfg.name;
+    process.env.orgRegion = cfg.region;
+    process.env.orgBucket = await Params.getOrgBucket();
+    return true;
 }
 
 function parseArgs(){
