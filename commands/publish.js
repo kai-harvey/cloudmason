@@ -1,8 +1,36 @@
 const { MarketplaceCatalogClient, StartChangeSetCommand, DescribeChangeSetCommand } = require("@aws-sdk/client-marketplace-catalog");
 const { EC2Client, DescribeImagesCommand } = require("@aws-sdk/client-ec2");
+const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
 const fs = require('fs');
 const path = require('path');
 const Params = require('./helpers/params');
+
+// Parse path-style, virtual-hosted, or s3:// URLs into {bucket, key, region}
+function parseS3Url(url){
+    if (!url){ throw new Error('Missing S3 URL'); }
+    let m;
+    if ((m = url.match(/^s3:\/\/([^/]+)\/(.+)$/)))                                 { return { bucket: m[1], key: m[2], region: null }; }
+    if ((m = url.match(/^https:\/\/s3\.([^.]+)\.amazonaws\.com\/([^/]+)\/(.+)$/))) { return { bucket: m[2], key: m[3], region: m[1] }; }
+    if ((m = url.match(/^https:\/\/s3\.amazonaws\.com\/([^/]+)\/(.+)$/)))          { return { bucket: m[1], key: m[2], region: null }; }
+    if ((m = url.match(/^https:\/\/([^.]+)\.s3\.([^.]+)\.amazonaws\.com\/(.+)$/))) { return { bucket: m[1], key: m[3], region: m[2] }; }
+    if ((m = url.match(/^https:\/\/([^.]+)\.s3\.amazonaws\.com\/(.+)$/)))          { return { bucket: m[1], key: m[2], region: null }; }
+    throw new Error('Unrecognized S3 URL format: ' + url);
+}
+
+// AWS Marketplace requires virtual-hosted-style URLs for Template/ArchitectureDiagram
+function toVirtualHostedUrl(url){
+    const { bucket, key, region } = parseS3Url(url);
+    return region
+        ? `https://${bucket}.s3.${region}.amazonaws.com/${key}`
+        : `https://${bucket}.s3.amazonaws.com/${key}`;
+}
+
+async function readS3Text(url){
+    const { bucket, key, region } = parseS3Url(url);
+    const client = new S3Client({ region: region || process.env.orgRegion });
+    const resp = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
+    return await resp.Body.transformToString();
+}
 
 exports.add_listing = async function(args){
     console.log('Adding Listing>>', args.app, args.pid);
@@ -34,6 +62,13 @@ exports.main = async function(args){
             console.log('ERR: No stack URL found for version',pubArgs.version);
             throw new Error('No stack URL found for version:' + pubArgs.version);
         }
+        const missing = ['short','long','diagram'].filter(k => !args[k]);
+        if (missing.length){
+            throw new Error('Missing required CFT args: ' + missing.map(k=>'-'+k).join(', '));
+        }
+        pubArgs.shortDescS3Url   = args.short;
+        pubArgs.longDescS3Url    = args.long;
+        pubArgs.archDiagramS3Url = args.diagram;
         console.log('Publishing AMI + CFT:\n\t',Object.entries(pubArgs).map(([k,v])=>{return `${k}:${v}`}).join('\n\t'));
         await exports.updateAmiCft(pubArgs);
     } else {
@@ -170,9 +205,15 @@ const updateAmiVersion = async ({productId, amiId, version, changeDescription, a
 
 // Update AMI + CloudFormation Template Function
 
-exports.updateAmiCft = async ({productId, amiId, version, changeDescription, arch, cftS3Url}) => {
+exports.updateAmiCft = async ({productId, amiId, version, changeDescription, arch, cftS3Url, shortDescS3Url, longDescS3Url, archDiagramS3Url}) => {
     const client = new MarketplaceCatalogClient({ region: process.env.orgRegion });
     console.log('Updating AMI+CFT version:', productId, amiId, version, changeDescription, cftS3Url);
+
+    const shortDescription = await readS3Text(shortDescS3Url);
+    const longDescription  = await readS3Text(longDescS3Url);
+    const templateUrl      = toVirtualHostedUrl(cftS3Url);
+    const diagramUrl       = toVirtualHostedUrl(archDiagramS3Url);
+
     try {
       const changeSet = {
         Catalog: "AWSMarketplace",
@@ -194,9 +235,12 @@ exports.updateAmiCft = async ({productId, amiId, version, changeDescription, arc
                         DeliveryOptionTitle: "AMI with CloudFormation Template",
                         Details: {
                             "DeploymentTemplateDeliveryOptionDetails": {
+                                "ShortDescription": shortDescription,
+                                "LongDescription": longDescription,
                                 "UsageInstructions": "Visit Theorim.ai/install for installation instructions",
                                 "RecommendedInstanceType": arch === 'arm' ? "r8g.medium" : "m6a.large",
-                                "Template": cftS3Url,
+                                "ArchitectureDiagram": diagramUrl,
+                                "Template": templateUrl,
                                 "TemplateSources": [
                                     {
                                         "ParameterName": "AmiId",
