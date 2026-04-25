@@ -57,11 +57,7 @@ exports.main = async function(args){
     pubArgs.amiId = instanceVersion.baseAMI_Id;
     pubArgs.arch = instanceVersion.arch || 'x86_64';
     if (args.cft){
-        pubArgs.cftS3Url = instanceVersion.stackURL;
-        if (!pubArgs.cftS3Url){
-            console.log('ERR: No stack URL found for version',pubArgs.version);
-            throw new Error('No stack URL found for version:' + pubArgs.version);
-        }
+        pubArgs.cftS3Url = args.cft;
         const missing = ['short','long','diagram'].filter(k => !args[k]);
         if (missing.length){
             throw new Error('Missing required CFT args: ' + missing.map(k=>'-'+k).join(', '));
