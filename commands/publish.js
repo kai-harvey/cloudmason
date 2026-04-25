@@ -156,53 +156,96 @@ const updateAmiVersion = async ({productId, amiId, version, changeDescription, a
 };
 
 
-// Get AMI Ids Function
-const getRegions = async (productId) => {
-  const client = new MarketplaceCatalogClient({ region: process.env.orgRegion }); // Update region if needed
+// Update AMI + CloudFormation Template Function
 
-
-    const command = new DescribeEntityCommand({
-      Catalog: "AWSMarketplace",
-      EntityId: productId,
-    });
-    const response = await client.send(command);
-    console.log('dd',response.DetailsDocument);
-    console.log('v',response.DetailsDocument.Versions[1].DeliveryOptions[0].AmiAlias);
-    return response.DetailsDocument.RegionAvailability.Regions;
-    // console.log("Regions:", response.DetailsDocument.Description.RegionAvailability.Regions);
-    // console.log("Version:", response.DetailsDocument.Description.RegionAvailability.Regions);
-    // Extract AMI details by region
-}
-
-// List by Mktplc Listing
-const getAMIs = async (region,productName,productCode) => {
-    const ec2Client = new EC2Client({ region });
-
+exports.updateAmiCft = async ({productId, amiId, version, changeDescription, arch, cftS3Url}) => {
+    const client = new MarketplaceCatalogClient({ region: process.env.orgRegion });
+    console.log('Updating AMI+CFT version:', productId, amiId, version, changeDescription, cftS3Url);
     try {
-        const command = new DescribeImagesCommand({
-            Filters: [
-                {
-                    Name: "name",
-                    Values: [
-                        `${productName}-*-${productCode}` // Adjust the filter to match your product naming pattern
-                    ]
-                }
-            ]
+      const changeSet = {
+        Catalog: "AWSMarketplace",
+        Intent: "APPLY",
+        ChangeSet: [
+          {
+            ChangeType: "AddDeliveryOptions",
+            Entity: {
+              Type: "AmiProduct@1.0",
+              Identifier: productId,
+            },
+            Details: JSON.stringify({
+                Version: {
+                    VersionTitle: version,
+                    ReleaseNotes: changeDescription,
+                },
+                DeliveryOptions: [
+                    {
+                        DeliveryOptionTitle: "AMI with CloudFormation Template",
+                        Details: {
+                            "DeploymentTemplateDeliveryOptionDetails": {
+                                "ShortDescription": "Theorim app delivered via AMI + CloudFormation",
+                                "LongDescription": "Launches the Theorim application stack via a CloudFormation template that references the published AMI.",
+                                "UsageInstructions": "Visit Theorim.ai/install for installation instructions",
+                                "RecommendedInstanceType": arch === 'arm' ? "r8g.medium" : "m6a.large",
+                                "ArchitectureDiagram": "https://theorim-public.s3.amazonaws.com/marketplace/architecture-diagram.png",
+                                "Template": cftS3Url,
+                                "TemplateSources": [
+                                    {
+                                        "ParameterName": "AmiId",
+                                        "AmiSource": {
+                                            "AmiId": amiId,
+                                            "AccessRoleArn": "arn:aws:iam::590183947985:role/Theorim_MarketPlaceRole",
+                                            "UserName": "ec2-user",
+                                            "OperatingSystemName": "AMAZONLINUX",
+                                            "OperatingSystemVersion": arch === 'arm'
+                                                ? "Amazon Linux 2023 arm64 HVM"
+                                                : "Amazon Linux 2 AMI 2.0.20220207.1 x86_64 HVM gp2"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }),
+          },
+        ],
+      };
+
+      const startChangeSetCommand = new StartChangeSetCommand(changeSet);
+      const startResponse = await client.send(startChangeSetCommand);
+      console.log("Change set started:", startResponse);
+
+      const changeSetId = startResponse.ChangeSetId;
+
+      let status = "IN_PROGRESS";
+      while (status === "IN_PROGRESS") {
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        const describeChangeSetCommand = new DescribeChangeSetCommand({
+          Catalog: "AWSMarketplace",
+          ChangeSetId: changeSetId,
         });
+        const describeResponse = await client.send(describeChangeSetCommand);
 
-        const response = await ec2Client.send(command);
+        status = describeResponse.Status;
+        console.log("Change set status:", status);
 
-        console.log(`Found ${response.Images.length} AMIs for product: ${productName} in region: ${region}`);
-        for (const ami of response.Images) {
-            console.log('ami',ami);
+        if (status === "SUCCEEDED") {
+          console.log("Change set succeeded:", describeResponse);
+          break;
+        } else if (status === "FAILED") {
+          console.error("Change set failed:", describeResponse);
+          throw new Error("Change set failed");
         }
+      }
 
-        return response.Images;
     } catch (error) {
-        console.error(`Error fetching AMIs for product: ${productName} in region: ${region}`, error);
-        throw error;
+      console.error("Error updating AMI+CFT version:", error);
+      throw error;
     }
-}
+};
+
+
 
 
 

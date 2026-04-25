@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 
-const path = require('path')
-const fs = require('fs')
-
 const Params = require('./commands/helpers/params');
+const OrgConfig = require('./commands/helpers/org_config');
 
 const Commands = {
     'init-org': {
@@ -257,16 +255,12 @@ function checkNodeVersion() {
 }
 
 async function readOrgInfo(){
-    const orgPath = path.resolve(__dirname,'org.txt');
-    if (fs.existsSync(orgPath)){
-        const orgInfo = fs.readFileSync(orgPath,'utf-8').split(',');
-        process.env.orgName = orgInfo[0];
-        process.env.orgRegion = orgInfo[1];
-        process.env.orgBucket = await Params.getOrgBucket();
-        return true;
-    } else {
-        return false;
-    }
+    const cfg = OrgConfig.read();
+    if (!cfg) return false;
+    process.env.orgName = cfg.name;
+    process.env.orgRegion = cfg.region;
+    process.env.orgBucket = await Params.getOrgBucket();
+    return true;
 }
 
 function parseArgs(){
