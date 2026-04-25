@@ -28,24 +28,36 @@ exports.main = async function(args){
     }
     pubArgs.amiId = instanceVersion.baseAMI_Id;
     pubArgs.arch = instanceVersion.arch || 'x86_64';
-    console.log('Publishing AMI:\n\t',Object.entries(pubArgs).map(([k,v])=>{return `${k}:${v}`}).join('\n\t'));
+    if (args.cft){
+        pubArgs.cftS3Url = instanceVersion.stackURL;
+        if (!pubArgs.cftS3Url){
+            console.log('ERR: No stack URL found for version',pubArgs.version);
+            throw new Error('No stack URL found for version:' + pubArgs.version);
+        }
+        console.log('Publishing AMI + CFT:\n\t',Object.entries(pubArgs).map(([k,v])=>{return `${k}:${v}`}).join('\n\t'));
+        await exports.updateAmiCft(pubArgs);
+    } else {
+        if (!args.stack){
+            throw new Error('Missing required arg -stack for AMI-only publish');
+        }
+        console.log('Publishing AMI:\n\t',Object.entries(pubArgs).map(([k,v])=>{return `${k}:${v}`}).join('\n\t'));
+        await updateAmiVersion(pubArgs);
+
+        // -- Get Marketplace AMI IDs
+        // AmiAlias: '/aws/service/marketplace/prod-shmtmk4gqrfge/1.2'
+        const amiAlias = `/aws/service/marketplace/${pubArgs.productId}/${pubArgs.version}`;
+        console.log('AMI Alias:',amiAlias);
+        let stackTxt = fs.readFileSync(path.resolve(args.stack),'utf8');
+        // stackTxt = stackTxt.replace(`ImageId: !Ref AmiId`,`ImageId: resolve:ssm:${amiAlias}`);
+        stackTxt = stackTxt.replace(/^#-Strip.+#-Strip/ms,'');
+
+        // -- Update CF Template with AMI IDs
+        // const newFileName = path.resolve(args.out);
+        // console.log('Updating Template:',newFileName);
+        // fs.writeFileSync(newFileName,stackTxt);
+    }
+
     console.log('----------')
-
-    // -- Publish AMI to Marketplace
-    await updateAmiVersion(pubArgs);
-
-    // -- Get Marketplace AMI IDs
-    // AmiAlias: '/aws/service/marketplace/prod-shmtmk4gqrfge/1.2'
-    const amiAlias = `/aws/service/marketplace/${pubArgs.productId}/${pubArgs.version}`;
-    console.log('AMI Alias:',amiAlias);
-    let stackTxt = fs.readFileSync(path.resolve(args.stack),'utf8');
-    // stackTxt = stackTxt.replace(`ImageId: !Ref AmiId`,`ImageId: resolve:ssm:${amiAlias}`);
-    stackTxt = stackTxt.replace(/^#-Strip.+#-Strip/ms,'');
-
-    // -- Update CF Template with AMI IDs
-    const newFileName = path.resolve(args.out);
-    console.log('Updating Template:',newFileName);
-    fs.writeFileSync(newFileName,stackTxt);
 
     // -- Suggest next step
     console.log('\nTo wait for this version to be publicly available in marketplace, run:');
@@ -182,11 +194,8 @@ exports.updateAmiCft = async ({productId, amiId, version, changeDescription, arc
                         DeliveryOptionTitle: "AMI with CloudFormation Template",
                         Details: {
                             "DeploymentTemplateDeliveryOptionDetails": {
-                                "ShortDescription": "Theorim app delivered via AMI + CloudFormation",
-                                "LongDescription": "Launches the Theorim application stack via a CloudFormation template that references the published AMI.",
                                 "UsageInstructions": "Visit Theorim.ai/install for installation instructions",
                                 "RecommendedInstanceType": arch === 'arm' ? "r8g.medium" : "m6a.large",
-                                "ArchitectureDiagram": "https://theorim-public.s3.amazonaws.com/marketplace/architecture-diagram.png",
                                 "Template": cftS3Url,
                                 "TemplateSources": [
                                     {
