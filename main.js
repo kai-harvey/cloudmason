@@ -115,7 +115,7 @@ const Commands = {
             {n: 'v', desc: 'Version to launch', pattern: `[0-9]{1,20}`, r: true},
             {n: 'stack', desc: 'Path of stack.yaml (required for AMI-only publish)', r: false},
             {n: 'out', desc: 'Output path of marketplace stack (AMI-only publish)', r: false},
-            {n: 'cft', desc: 'Publish as AMI + CloudFormation Template delivery', r: false},
+            {n: 'cft', desc: 'S3 URL of CloudFormation template (presence triggers AMI + CFT delivery)', r: false},
             {n: 'short', desc: 'S3 URL of short-description text file (required when -cft is set)', r: false},
             {n: 'long', desc: 'S3 URL of long-description text file (required when -cft is set)', r: false},
             {n: 'diagram', desc: 'S3 URL of architecture diagram image (required when -cft is set)', r: false}
